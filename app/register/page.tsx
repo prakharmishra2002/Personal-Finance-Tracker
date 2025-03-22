@@ -1,15 +1,17 @@
 "use client"
 
 import type React from "react"
-
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useToast } from "@/hooks/use-toast"
+import { PasswordInput } from "@/components/password-input"
+import { EmailService } from "@/services/email-service"
+import { AlertCircle, CheckCircle2, Loader2 } from "lucide-react"
 
 export default function RegisterPage() {
   const [formData, setFormData] = useState({
@@ -19,36 +21,98 @@ export default function RegisterPage() {
     confirmPassword: "",
   })
   const [loading, setLoading] = useState(false)
+  const [emailError, setEmailError] = useState("")
+  const [verificationSent, setVerificationSent] = useState(false)
   const router = useRouter()
+  const searchParams = useSearchParams()
   const { toast } = useToast()
+
+  // Check for verification token in URL
+  useEffect(() => {
+    const token = searchParams.get("token")
+    if (token) {
+      verifyEmail(token)
+    }
+  }, [searchParams])
+
+  const verifyEmail = async (token: string) => {
+    setLoading(true)
+
+    // Verify the token
+    const result = EmailService.verifyToken(token)
+
+    if (result.valid && result.userData) {
+      // Token is valid, complete registration
+      const user = result.userData
+
+      // Get existing users or initialize empty array
+      const existingUsers = JSON.parse(localStorage.getItem("users") || "[]")
+
+      // Save user to localStorage
+      localStorage.setItem("users", JSON.stringify([...existingUsers, user]))
+
+      // Create auth token
+      const authToken = btoa(`${user.id}:${Date.now()}`)
+      localStorage.setItem("authToken", token)
+      localStorage.setItem("currentUser", JSON.stringify(user))
+
+      toast({
+        title: "Email verified!",
+        description: "Your account has been successfully created.",
+      })
+
+      // Redirect to dashboard
+      setTimeout(() => {
+        router.push("/dashboard")
+      }, 1000)
+    } else {
+      toast({
+        title: "Verification failed",
+        description: "The verification link is invalid or has expired.",
+        variant: "destructive",
+      })
+      setLoading(false)
+    }
+  }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
     setFormData((prev) => ({ ...prev, [name]: value }))
+
+    // Clear email error when user types
+    if (name === "email") {
+      setEmailError("")
+    }
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    setLoading(true)
+  const validateForm = () => {
+    // Validate email format
+    if (!EmailService.validateEmail(formData.email)) {
+      setEmailError("Please enter a valid email address")
+      return false
+    }
 
-    // Validate form
+    // Validate password match
     if (formData.password !== formData.confirmPassword) {
       toast({
         title: "Passwords don't match",
         description: "Please make sure your passwords match.",
         variant: "destructive",
       })
-      setLoading(false)
-      return
+      return false
     }
 
-    // Create user object
-    const user = {
-      id: Date.now().toString(),
-      name: formData.name,
-      email: formData.email,
-      password: formData.password, // In a real app, you would hash this password
-      createdAt: new Date().toISOString(),
+    return true
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setLoading(true)
+
+    // Validate form
+    if (!validateForm()) {
+      setLoading(false)
+      return
     }
 
     // Get existing users or initialize empty array
@@ -65,23 +129,76 @@ export default function RegisterPage() {
       return
     }
 
-    // Save user to localStorage
-    localStorage.setItem("users", JSON.stringify([...existingUsers, user]))
+    // Create user object
+    const user = {
+      id: Date.now().toString(),
+      name: formData.name,
+      email: formData.email,
+      password: formData.password, // In a real app, you would hash this password
+      createdAt: new Date().toISOString(),
+      verified: false,
+    }
 
-    // Create auth token
-    const token = btoa(`${user.id}:${Date.now()}`)
-    localStorage.setItem("authToken", token)
-    localStorage.setItem("currentUser", JSON.stringify(user))
+    // Create verification token
+    const token = EmailService.createVerificationToken(formData.email, user)
 
-    toast({
-      title: "Account created!",
-      description: "You have successfully registered.",
-    })
+    // Send verification email
+    try {
+      await EmailService.sendVerificationEmail(formData.email, token)
 
-    // Redirect to dashboard
-    setTimeout(() => {
-      router.push("/dashboard")
-    }, 1000)
+      setVerificationSent(true)
+      toast({
+        title: "Verification email sent",
+        description: "Please check your email to complete registration.",
+      })
+    } catch (error) {
+      toast({
+        title: "Failed to send verification email",
+        description: "Please try again later.",
+        variant: "destructive",
+      })
+    }
+
+    setLoading(false)
+  }
+
+  // Update the verification sent screen to provide clearer instructions
+  // If verification email has been sent, show confirmation screen
+  if (verificationSent) {
+    return (
+      <div className="container flex h-screen w-screen flex-col items-center justify-center">
+        <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[400px]">
+          <div className="flex flex-col items-center space-y-2 text-center">
+            <CheckCircle2 className="h-12 w-12 text-green-500" />
+            <h1 className="text-2xl font-semibold tracking-tight">Verification Email Sent</h1>
+            <p className="text-sm text-muted-foreground">
+              We've simulated sending a verification link to <strong>{formData.email}</strong>
+            </p>
+            <div className="mt-4 p-4 bg-muted rounded-md text-sm">
+              <p className="font-medium mb-2">📝 Demo Instructions:</p>
+              <ol className="list-decimal list-inside space-y-1 text-left">
+                <li>In a real app, you would check your email inbox</li>
+                <li>
+                  For this demo, visit the{" "}
+                  <Link href="/demo-verification" className="text-primary hover:underline">
+                    verification demo page
+                  </Link>
+                </li>
+                <li>Find your email in the list and click the verification link</li>
+              </ol>
+            </div>
+          </div>
+          <div className="flex justify-between">
+            <Button variant="ghost" onClick={() => setVerificationSent(false)}>
+              Back to registration
+            </Button>
+            <Button asChild>
+              <Link href="/demo-verification">Go to Demo Verification</Link>
+            </Button>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -117,15 +234,20 @@ export default function RegisterPage() {
                     required
                     value={formData.email}
                     onChange={handleChange}
+                    className={emailError ? "border-red-500" : ""}
                   />
+                  {emailError && (
+                    <div className="flex items-center text-sm text-red-500">
+                      <AlertCircle className="mr-1 h-4 w-4" />
+                      {emailError}
+                    </div>
+                  )}
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor="password">Password</Label>
-                  <Input
+                  <PasswordInput
                     id="password"
                     name="password"
-                    placeholder="••••••••"
-                    type="password"
                     required
                     minLength={8}
                     value={formData.password}
@@ -134,11 +256,9 @@ export default function RegisterPage() {
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor="confirmPassword">Confirm Password</Label>
-                  <Input
+                  <PasswordInput
                     id="confirmPassword"
                     name="confirmPassword"
-                    placeholder="••••••••"
-                    type="password"
                     required
                     value={formData.confirmPassword}
                     onChange={handleChange}
@@ -148,7 +268,14 @@ export default function RegisterPage() {
             </CardContent>
             <CardFooter className="flex flex-col">
               <Button className="w-full" type="submit" disabled={loading}>
-                {loading ? "Creating account..." : "Create account"}
+                {loading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Creating account...
+                  </>
+                ) : (
+                  "Create account"
+                )}
               </Button>
             </CardFooter>
           </form>

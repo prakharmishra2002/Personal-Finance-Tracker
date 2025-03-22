@@ -26,6 +26,7 @@ import { User, Lock, Bell, Globe, Moon, Sun, Trash2 } from "lucide-react"
 import DashboardLayout from "@/components/dashboard-layout"
 import { useToast } from "@/hooks/use-toast"
 import { useTheme } from "next-themes"
+import { PasswordInput } from "@/components/password-input"
 
 export default function SettingsPage() {
   const [isClient, setIsClient] = useState(false)
@@ -346,11 +347,9 @@ export default function SettingsPage() {
                 <CardContent className="space-y-4">
                   <div className="space-y-2">
                     <Label htmlFor="currentPassword">Current Password</Label>
-                    <Input
+                    <PasswordInput
                       id="currentPassword"
                       name="currentPassword"
-                      type="password"
-                      placeholder="••••••••"
                       value={passwordForm.currentPassword}
                       onChange={handlePasswordChange}
                       required
@@ -358,11 +357,9 @@ export default function SettingsPage() {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="newPassword">New Password</Label>
-                    <Input
+                    <PasswordInput
                       id="newPassword"
                       name="newPassword"
-                      type="password"
-                      placeholder="••••••••"
                       value={passwordForm.newPassword}
                       onChange={handlePasswordChange}
                       required
@@ -372,11 +369,9 @@ export default function SettingsPage() {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="confirmPassword">Confirm New Password</Label>
-                    <Input
+                    <PasswordInput
                       id="confirmPassword"
                       name="confirmPassword"
-                      type="password"
-                      placeholder="••••••••"
                       value={passwordForm.confirmPassword}
                       onChange={handlePasswordChange}
                       required
