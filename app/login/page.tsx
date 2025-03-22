@@ -51,10 +51,12 @@ export default function LoginPage() {
         router.push("/dashboard")
       }, 1000)
     } else {
+      console.error("Login failed: Invalid credentials")
       toast({
         title: "Login failed",
         description: "Invalid email or password. Please try again.",
         variant: "destructive",
+        duration: 2000, // Show for 5 seconds
       })
       setLoading(false)
     }
