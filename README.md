@@ -88,6 +88,7 @@ styles/
 2. **Install Dependencies**
    ```sh
    npm install recharts lucide-react next-themes --force
+   npm install next --legacy-peer-deps
    ```
 3. **Build Production**
    ```sh
