@@ -1,15 +1,15 @@
 "use client"
 
 import type React from "react"
-
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import { useRouter, usePathname } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { LayoutDashboard, CreditCard, PieChart, Settings, LogOut, Menu, DollarSign } from "lucide-react"
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
+import { Dialog, DialogContent } from "@/components/ui/dialog"
 import { useToast } from "@/hooks/use-toast"
 import { useMobile } from "@/hooks/use-mobile"
+import { Chatbot } from "@/components/chatbot"
 
 interface DashboardLayoutProps {
   children: React.ReactNode
@@ -22,7 +22,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const pathname = usePathname()
   const { toast } = useToast()
   const isMobile = useMobile()
-  const [open, setOpen] = useState(false)
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   useEffect(() => {
     setIsClient(true)
@@ -71,7 +71,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           {navigation.map((item) => {
             const isActive = pathname === item.href
             return (
-              <Link key={item.name} href={item.href} onClick={() => setOpen(false)}>
+              <Link key={item.name} href={item.href} onClick={() => setMobileMenuOpen(false)}>
                 <Button variant={isActive ? "secondary" : "ghost"} className="w-full justify-start">
                   <item.icon className="mr-2 h-4 w-4" />
                   {item.name}
@@ -98,17 +98,23 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
     <div className="flex min-h-screen flex-col">
       <header className="sticky top-0 z-50 flex h-14 items-center gap-4 border-b bg-background px-4 sm:px-6">
         {isMobile && (
-          <Sheet open={open} onOpenChange={setOpen}>
-            <SheetTrigger asChild>
-              <Button variant="ghost" size="icon" className="md:hidden">
-                <Menu className="h-5 w-5" />
-                <span className="sr-only">Toggle navigation menu</span>
-              </Button>
-            </SheetTrigger>
-            <SheetContent side="left" className="flex flex-col">
-              <NavItems />
-            </SheetContent>
-          </Sheet>
+          <>
+            <Button variant="ghost" size="icon" className="md:hidden" onClick={() => setMobileMenuOpen(true)}>
+              <Menu className="h-5 w-5" />
+              <span className="sr-only">Toggle navigation menu</span>
+            </Button>
+
+            <Dialog open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+              <DialogContent
+                className="left-0 top-0 translate-x-0 translate-y-0 p-0 h-screen max-w-[250px]"
+                side="left"
+              >
+                <div className="flex h-full flex-col">
+                  <NavItems />
+                </div>
+              </DialogContent>
+            </Dialog>
+          </>
         )}
         <div className="ml-auto flex items-center gap-2">
           {user && (
@@ -128,6 +134,9 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
         )}
         <main className="flex-1 p-4 md:p-6">{children}</main>
       </div>
+
+      {/* Add the Chatbot component */}
+      <Chatbot />
     </div>
   )
 }

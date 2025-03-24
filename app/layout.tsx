@@ -9,6 +9,7 @@ const inter = Inter({ subsets: ["latin"] })
 export const metadata = {
   title: "Personal Finance Tracker",
   description: "Track your finances, manage budgets, and convert currencies",
+    generator: 'v0.dev'
 }
 
 export default function RootLayout({
@@ -27,8 +28,6 @@ export default function RootLayout({
     </html>
   )
 }
-
-
 
 
 

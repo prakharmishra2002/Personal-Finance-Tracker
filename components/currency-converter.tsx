@@ -233,8 +233,8 @@ export default function CurrencyConverter() {
         <p className="font-medium">Note:</p>
         <p className="text-muted-foreground">
           This is a demo currency converter using simulated exchange rates. In a production app, you would connect to a
-          real-time currency API like Open Exchange Rates, Fixer.io, or you would connect to a real-time currency API
-          like Open Exchange Rates, Fixer.io, or Currencylayer to get accurate, up-to-date exchange rates.
+          real-time currency API like Open Exchange Rates, Fixer.io, or Currencylayer to get accurate, up-to-date
+          exchange rates.
         </p>
       </div>
     </div>
