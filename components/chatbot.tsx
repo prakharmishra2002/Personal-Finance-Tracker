@@ -3,7 +3,6 @@
 import type React from "react"
 
 import { useState, useRef, useEffect } from "react"
-import { AnimatePresence, motion } from "framer-motion"
 import { Bot, X, Send } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -110,7 +109,7 @@ export function Chatbot() {
 
     // About reports and charts
     if (normalizedQuery.includes("report") || normalizedQuery.includes("chart") || normalizedQuery.includes("graph")) {
-      return "The Reports section provides visual analytics of your financial data. You'll find pie charts for spending by category, bar charts for income vs expenses, line charts for spending trends, and more. These visualizations help you understand your financial patterns better."
+      return "The Reports section provides visual analytics of your financial data. You'll find visualizations for spending by category, income vs expenses, spending trends, and more. These visualizations help you understand your financial patterns better."
     }
 
     // About currency conversion
@@ -124,7 +123,7 @@ export function Chatbot() {
       normalizedQuery.includes("technology") ||
       normalizedQuery.includes("tech stack")
     ) {
-      return "This Finance Tracker is built with Next.js, TypeScript, and Tailwind CSS. It uses shadcn/ui for components and Recharts for data visualization. The application is client-side only, with data stored in your browser's localStorage."
+      return "This Finance Tracker is built with Next.js, TypeScript, and Tailwind CSS. It uses shadcn/ui for components. The application is client-side only, with data stored in your browser's localStorage."
     }
 
     // Default response
@@ -135,13 +134,7 @@ export function Chatbot() {
     <>
       {/* Floating chat button */}
       <div className="fixed bottom-6 right-6 z-50">
-        <motion.div
-          className="relative"
-          onMouseEnter={() => setIsHovered(true)}
-          onMouseLeave={() => setIsHovered(false)}
-          animate={{ y: [0, -5, 0] }}
-          transition={{ repeat: Number.POSITIVE_INFINITY, duration: 2, ease: "easeInOut" }}
-        >
+        <div className="relative" onMouseEnter={() => setIsHovered(true)} onMouseLeave={() => setIsHovered(false)}>
           <Button
             size="icon"
             className="h-14 w-14 rounded-full shadow-lg bg-primary hover:bg-primary/90"
@@ -151,101 +144,81 @@ export function Chatbot() {
           </Button>
 
           {/* Hover tooltip */}
-          <AnimatePresence>
-            {isHovered && !isOpen && (
-              <motion.div
-                className="absolute bottom-16 right-0 bg-white dark:bg-gray-800 rounded-lg shadow-lg p-3 whitespace-nowrap"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 10 }}
-              >
-                <div className="text-sm font-medium">Hi, how can I help you?</div>
-                <div className="absolute -bottom-2 right-5 w-3 h-3 bg-white dark:bg-gray-800 transform rotate-45"></div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </motion.div>
+          {isHovered && !isOpen && (
+            <div className="absolute bottom-16 right-0 bg-white dark:bg-gray-800 rounded-lg shadow-lg p-3 whitespace-nowrap">
+              <div className="text-sm font-medium">Hi, how can I help you?</div>
+              <div className="absolute -bottom-2 right-5 w-3 h-3 bg-white dark:bg-gray-800 transform rotate-45"></div>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Chat window */}
-      <AnimatePresence>
-        {isOpen && (
-          <motion.div
-            className="fixed bottom-24 right-6 z-50 w-80 sm:w-96 shadow-xl"
-            initial={{ opacity: 0, y: 20, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 20, scale: 0.95 }}
-            transition={{ duration: 0.2 }}
-          >
-            <Card className="border-primary/10">
-              <CardHeader className="bg-muted/50 pb-3">
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-base flex items-center">
-                    <Bot className="h-5 w-5 mr-2 text-primary" />
-                    Finance Assistant
-                  </CardTitle>
-                  <Button variant="ghost" size="icon" onClick={toggleChat} className="h-8 w-8">
-                    <X className="h-4 w-4" />
-                  </Button>
-                </div>
-              </CardHeader>
-              <CardContent className="p-0">
-                <ScrollArea className="h-[350px] p-4">
-                  <div className="space-y-4">
-                    {messages.map((message) => (
+      {isOpen && (
+        <div className="fixed bottom-24 right-6 z-50 w-80 sm:w-96 shadow-xl">
+          <Card className="border-primary/10">
+            <CardHeader className="bg-muted/50 pb-3">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-base flex items-center">
+                  <Bot className="h-5 w-5 mr-2 text-primary" />
+                  Finance Assistant
+                </CardTitle>
+                <Button variant="ghost" size="icon" onClick={toggleChat} className="h-8 w-8">
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent className="p-0">
+              <ScrollArea className="h-[350px] p-4">
+                <div className="space-y-4">
+                  {messages.map((message) => (
+                    <div
+                      key={message.id}
+                      className={cn("flex", message.role === "user" ? "justify-end" : "justify-start")}
+                    >
                       <div
-                        key={message.id}
-                        className={cn("flex", message.role === "user" ? "justify-end" : "justify-start")}
+                        className={cn(
+                          "max-w-[80%] rounded-lg px-3 py-2 text-sm",
+                          message.role === "user" ? "bg-primary text-primary-foreground" : "bg-muted",
+                        )}
                       >
-                        <div
-                          className={cn(
-                            "max-w-[80%] rounded-lg px-3 py-2 text-sm",
-                            message.role === "user" ? "bg-primary text-primary-foreground" : "bg-muted",
-                          )}
-                        >
-                          {message.content}
+                        {message.content}
+                      </div>
+                    </div>
+                  ))}
+                  {isTyping && (
+                    <div className="flex justify-start">
+                      <div className="max-w-[80%] rounded-lg px-3 py-2 text-sm bg-muted">
+                        <div className="flex space-x-1">
+                          <div className="h-2 w-2 rounded-full bg-gray-400"></div>
+                          <div className="h-2 w-2 rounded-full bg-gray-400"></div>
+                          <div className="h-2 w-2 rounded-full bg-gray-400"></div>
                         </div>
                       </div>
-                    ))}
-                    {isTyping && (
-                      <div className="flex justify-start">
-                        <div className="max-w-[80%] rounded-lg px-3 py-2 text-sm bg-muted">
-                          <motion.div
-                            className="flex space-x-1"
-                            initial={{ opacity: 0.5 }}
-                            animate={{ opacity: 1 }}
-                            transition={{ repeat: Number.POSITIVE_INFINITY, duration: 1 }}
-                          >
-                            <div className="h-2 w-2 rounded-full bg-gray-400"></div>
-                            <div className="h-2 w-2 rounded-full bg-gray-400"></div>
-                            <div className="h-2 w-2 rounded-full bg-gray-400"></div>
-                          </motion.div>
-                        </div>
-                      </div>
-                    )}
-                    <div ref={messagesEndRef} />
-                  </div>
-                </ScrollArea>
-              </CardContent>
-              <CardFooter className="border-t p-3">
-                <form onSubmit={handleSubmit} className="flex w-full items-center space-x-2">
-                  <Input
-                    ref={inputRef}
-                    placeholder="Type your message..."
-                    value={input}
-                    onChange={(e) => setInput(e.target.value)}
-                    className="flex-1"
-                  />
-                  <Button type="submit" size="icon" disabled={!input.trim() || isTyping}>
-                    <Send className="h-4 w-4" />
-                    <span className="sr-only">Send</span>
-                  </Button>
-                </form>
-              </CardFooter>
-            </Card>
-          </motion.div>
-        )}
-      </AnimatePresence>
+                    </div>
+                  )}
+                  <div ref={messagesEndRef} />
+                </div>
+              </ScrollArea>
+            </CardContent>
+            <CardFooter className="border-t p-3">
+              <form onSubmit={handleSubmit} className="flex w-full items-center space-x-2">
+                <Input
+                  ref={inputRef}
+                  placeholder="Type your message..."
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  className="flex-1"
+                />
+                <Button type="submit" size="icon" disabled={!input.trim() || isTyping}>
+                  <Send className="h-4 w-4" />
+                  <span className="sr-only">Send</span>
+                </Button>
+              </form>
+            </CardFooter>
+          </Card>
+        </div>
+      )}
     </>
   )
 }

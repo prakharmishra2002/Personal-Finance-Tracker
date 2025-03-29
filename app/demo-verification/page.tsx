@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import Link from "next/link"
+import { AlertTriangle } from "lucide-react"
 
 export default function DemoVerificationPage() {
   const [sentEmails, setSentEmails] = useState<any[]>([])
@@ -37,29 +38,14 @@ export default function DemoVerificationPage() {
             <CardTitle>Email Verification Demo</CardTitle>
             <CardDescription>
               <div className="space-y-2 mt-2">
-                <p className="text-amber-500 font-medium flex items-center">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="16"
-                    height="16"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    className="mr-1"
-                  >
-                    <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path>
-                    <path d="M12 9v4"></path>
-                    <path d="M12 17h.01"></path>
-                  </svg>
+                <div className="text-amber-500 font-medium flex items-center">
+                  <AlertTriangle className="mr-1 h-4 w-4" />
                   This is a demo without a real email server
-                </p>
-                <p>
+                </div>
+                <div>
                   Since this is a client-side demo without a backend server, no actual emails are sent. Instead, use
                   this page to simulate receiving and clicking verification links.
-                </p>
+                </div>
               </div>
             </CardDescription>
           </CardHeader>
@@ -67,17 +53,17 @@ export default function DemoVerificationPage() {
             <div className="space-y-4">
               <div>
                 <h3 className="text-lg font-medium">Sent Verification Emails</h3>
-                <p className="text-sm text-muted-foreground mb-4">Select an email to view the verification link:</p>
+                <div className="text-sm text-muted-foreground mb-4">Select an email to view the verification link:</div>
 
                 {sentEmails.length === 0 ? (
                   <div className="text-center p-4 border rounded-md">
-                    <p className="text-muted-foreground">No verification emails have been sent yet.</p>
-                    <p className="text-sm mt-2">
+                    <div className="text-muted-foreground">No verification emails have been sent yet.</div>
+                    <div className="text-sm mt-2">
                       <Link href="/register" className="text-primary hover:underline">
                         Register a new account
                       </Link>{" "}
                       to send a verification email.
-                    </p>
+                    </div>
                   </div>
                 ) : (
                   <div className="space-y-2">
@@ -91,10 +77,10 @@ export default function DemoVerificationPage() {
                       >
                         <div className="flex justify-between">
                           <div>
-                            <p className="font-medium">{email.email}</p>
-                            <p className="text-xs text-muted-foreground">
+                            <div className="font-medium">{email.email}</div>
+                            <div className="text-xs text-muted-foreground">
                               Sent: {new Date(email.sentAt).toLocaleString()}
-                            </p>
+                            </div>
                           </div>
                           <Button
                             variant="ghost"

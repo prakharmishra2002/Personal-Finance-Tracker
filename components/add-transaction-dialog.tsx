@@ -1,7 +1,6 @@
 "use client"
 
 import type React from "react"
-
 import { useState } from "react"
 import {
   Dialog,
@@ -106,23 +105,24 @@ export default function AddTransactionDialog({ open, onOpenChange, onAdd }: AddT
             <DialogDescription>Add a new transaction to your finance tracker.</DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
-            <div className="grid gap-2">
-              <Label htmlFor="type">Transaction Type</Label>
-              <RadioGroup
-                value={formData.type}
-                onValueChange={(value) => handleSelectChange("type", value)}
-                className="flex space-x-4"
-              >
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="expense" id="expense" />
-                  <Label htmlFor="expense">Expense</Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="income" id="income" />
-                  <Label htmlFor="income">Income</Label>
-                </div>
-              </RadioGroup>
+          <div className="grid gap-2">
+          <Label>Transaction Type</Label> {/* Removed htmlFor="type" */}
+          <RadioGroup
+            name="type"
+            value={formData.type}
+            onValueChange={(value) => handleSelectChange("type", value)}
+            className="flex space-x-4"
+          >
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="expense" id="expense" />
+              <Label htmlFor="expense">Expense</Label>
             </div>
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="income" id="income" />
+              <Label htmlFor="income">Income</Label>
+            </div>
+          </RadioGroup>
+        </div>
             <div className="grid gap-2">
               <Label htmlFor="date">Date</Label>
               <Input id="date" name="date" type="date" value={formData.date} onChange={handleChange} required />
@@ -155,11 +155,12 @@ export default function AddTransactionDialog({ open, onOpenChange, onAdd }: AddT
             <div className="grid gap-2">
               <Label htmlFor="category">Category</Label>
               <Select
+                name="category" // Added name attribute
                 value={formData.category}
                 onValueChange={(value) => handleSelectChange("category", value)}
                 required
               >
-                <SelectTrigger>
+                <SelectTrigger id="category"> {/* Added id attribute */}
                   <SelectValue placeholder="Select category" />
                 </SelectTrigger>
                 <SelectContent>
@@ -173,8 +174,12 @@ export default function AddTransactionDialog({ open, onOpenChange, onAdd }: AddT
             </div>
             <div className="grid gap-2">
               <Label htmlFor="currency">Currency</Label>
-              <Select value={formData.currency} onValueChange={(value) => handleSelectChange("currency", value)}>
-                <SelectTrigger>
+              <Select
+                name="currency" // Added name attribute
+                value={formData.currency}
+                onValueChange={(value) => handleSelectChange("currency", value)}
+              >
+                <SelectTrigger id="currency"> {/* Added id attribute */}
                   <SelectValue placeholder="Select currency" />
                 </SelectTrigger>
                 <SelectContent>
@@ -195,4 +200,3 @@ export default function AddTransactionDialog({ open, onOpenChange, onAdd }: AddT
     </Dialog>
   )
 }
-

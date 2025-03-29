@@ -1,8 +1,6 @@
 "use client"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Chart, ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
-import { Pie, PieChart, Cell, Tooltip, Legend, ResponsiveContainer } from "recharts"
 
 interface DashboardAnalyticsProps {
   transactions: any[]
@@ -15,20 +13,6 @@ export default function DashboardAnalytics({
   selectedCategory,
   onCategoryChange,
 }: DashboardAnalyticsProps) {
-  // Chart colors
-  const COLORS = [
-    "#8884d8",
-    "#82ca9d",
-    "#ffc658",
-    "#ff8042",
-    "#0088fe",
-    "#00c49f",
-    "#ffbb28",
-    "#ff8042",
-    "#a4de6c",
-    "#d0ed57",
-  ]
-
   // Categories for filtering
   const categories = [
     { value: "all", label: "All Categories" },
@@ -85,6 +69,9 @@ export default function DashboardAnalytics({
   // Get data for chart
   const spendingByCategoryData = getSpendingByCategoryData()
 
+  // Calculate total spending
+  const totalSpending = spendingByCategoryData.reduce((total, item) => total + item.value, 0)
+
   return (
     <Card>
       <CardHeader>
@@ -110,47 +97,26 @@ export default function DashboardAnalytics({
         </div>
       </CardHeader>
       <CardContent>
-        <div className="h-[300px]">
+        <div className="h-[300px] overflow-auto">
           {spendingByCategoryData.length > 0 ? (
-            <Chart>
-              <ChartContainer>
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={spendingByCategoryData}
-                      cx="50%"
-                      cy="50%"
-                      labelLine={false}
-                      outerRadius={120}
-                      fill="#8884d8"
-                      dataKey="value"
-                      label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                    >
-                      {spendingByCategoryData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                      ))}
-                    </Pie>
-                    <Tooltip
-                      formatter={(value: number) => formatCurrency(value)}
-                      content={({ active, payload }) => {
-                        if (active && payload && payload.length) {
-                          return (
-                            <ChartTooltip>
-                              <ChartTooltipContent>
-                                <div className="font-medium">{payload[0].name}</div>
-                                <div>{formatCurrency(payload[0].value as number)}</div>
-                              </ChartTooltipContent>
-                            </ChartTooltip>
-                          )
-                        }
-                        return null
-                      }}
-                    />
-                    <Legend />
-                  </PieChart>
-                </ResponsiveContainer>
-              </ChartContainer>
-            </Chart>
+            <div className="space-y-4">
+              {spendingByCategoryData.map((item, index) => {
+                const percentage = Math.round((item.value / totalSpending) * 100)
+                return (
+                  <div key={item.name} className="space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span className="font-medium">{item.name}</span>
+                      <span>
+                        {formatCurrency(item.value)} ({percentage}%)
+                      </span>
+                    </div>
+                    <div className="h-2 w-full rounded-full bg-muted">
+                      <div className="h-full rounded-full bg-primary" style={{ width: `${percentage}%` }}></div>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
           ) : (
             <div className="flex h-full items-center justify-center">
               <div className="text-center">

@@ -10,22 +10,6 @@ import { Label } from "@/components/ui/label"
 import { Download, FileText, PieChart, BarChart, LineChart } from "lucide-react"
 import DashboardLayout from "@/components/dashboard-layout"
 import { useToast } from "@/hooks/use-toast"
-import { Chart, ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
-import {
-  Bar,
-  BarChart as RechartsBarChart,
-  Line,
-  LineChart as RechartsLineChart,
-  Pie,
-  PieChart as RechartsPieChart,
-  Cell,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-} from "recharts"
 
 export default function ReportsPage() {
   const [isClient, setIsClient] = useState(false)
@@ -36,20 +20,6 @@ export default function ReportsPage() {
   const [categoryFilter, setCategoryFilter] = useState("all")
   const router = useRouter()
   const { toast } = useToast()
-
-  // Chart colors
-  const COLORS = [
-    "#8884d8",
-    "#82ca9d",
-    "#ffc658",
-    "#ff8042",
-    "#0088fe",
-    "#00c49f",
-    "#ffbb28",
-    "#ff8042",
-    "#a4de6c",
-    "#d0ed57",
-  ]
 
   // Time frame options
   const timeframes = [
@@ -443,47 +413,28 @@ export default function ReportsPage() {
               <CardDescription>Breakdown of your expenses by category for the selected period.</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="h-[400px]">
+              <div className="h-[400px] overflow-auto">
                 {spendingByCategoryData.length > 0 ? (
-                  <Chart>
-                    <ChartContainer>
-                      <ResponsiveContainer width="100%" height="100%">
-                        <RechartsPieChart>
-                          <Pie
-                            data={spendingByCategoryData}
-                            cx="50%"
-                            cy="50%"
-                            labelLine={false}
-                            outerRadius={150}
-                            fill="#8884d8"
-                            dataKey="value"
-                            label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                          >
-                            {spendingByCategoryData.map((entry, index) => (
-                              <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                            ))}
-                          </Pie>
-                          <Tooltip
-                            formatter={(value: number) => formatCurrency(value)}
-                            content={({ active, payload }) => {
-                              if (active && payload && payload.length) {
-                                return (
-                                  <ChartTooltip>
-                                    <ChartTooltipContent>
-                                      <div className="font-medium">{payload[0].name}</div>
-                                      <div>{formatCurrency(payload[0].value as number)}</div>
-                                    </ChartTooltipContent>
-                                  </ChartTooltip>
-                                )
-                              }
-                              return null
-                            }}
-                          />
-                          <Legend />
-                        </RechartsPieChart>
-                      </ResponsiveContainer>
-                    </ChartContainer>
-                  </Chart>
+                  <div className="space-y-4">
+                    {spendingByCategoryData.map((item) => {
+                      const totalSpending = spendingByCategoryData.reduce((sum, i) => sum + i.value, 0)
+                      const percentage = Math.round((item.value / totalSpending) * 100)
+
+                      return (
+                        <div key={item.name} className="space-y-2">
+                          <div className="flex justify-between text-sm">
+                            <span className="font-medium">{item.name}</span>
+                            <span>
+                              {formatCurrency(item.value)} ({percentage}%)
+                            </span>
+                          </div>
+                          <div className="h-2 w-full rounded-full bg-muted">
+                            <div className="h-full rounded-full bg-primary" style={{ width: `${percentage}%` }}></div>
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </div>
                 ) : (
                   <div className="flex h-full items-center justify-center">
                     <div className="text-center">
@@ -510,51 +461,51 @@ export default function ReportsPage() {
               <CardDescription>Comparison of your income and expenses over time.</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="h-[400px]">
+              <div className="h-[400px] overflow-auto">
                 {incomeVsExpensesData.length > 0 ? (
-                  <Chart>
-                    <ChartContainer>
-                      <ResponsiveContainer width="100%" height="100%">
-                        <RechartsBarChart
-                          data={incomeVsExpensesData}
-                          margin={{
-                            top: 20,
-                            right: 30,
-                            left: 20,
-                            bottom: 5,
-                          }}
-                        >
-                          <CartesianGrid strokeDasharray="3 3" />
-                          <XAxis dataKey="month" />
-                          <YAxis tickFormatter={(value) => `$${value}`} />
-                          <Tooltip
-                            formatter={(value: number) => formatCurrency(value)}
-                            content={({ active, payload, label }) => {
-                              if (active && payload && payload.length) {
-                                return (
-                                  <ChartTooltip>
-                                    <ChartTooltipContent>
-                                      <div className="font-medium">{label}</div>
-                                      <div className="text-green-500">
-                                        Income: {formatCurrency(payload[0].value as number)}
-                                      </div>
-                                      <div className="text-red-500">
-                                        Expenses: {formatCurrency(payload[1].value as number)}
-                                      </div>
-                                    </ChartTooltipContent>
-                                  </ChartTooltip>
-                                )
-                              }
-                              return null
-                            }}
-                          />
-                          <Legend />
-                          <Bar dataKey="income" fill="#82ca9d" name="Income" />
-                          <Bar dataKey="expenses" fill="#ff8042" name="Expenses" />
-                        </RechartsBarChart>
-                      </ResponsiveContainer>
-                    </ChartContainer>
-                  </Chart>
+                  <div className="space-y-6">
+                    {incomeVsExpensesData.map((item) => (
+                      <div key={item.month} className="space-y-4">
+                        <h3 className="font-medium">{item.month}</h3>
+                        <div className="space-y-2">
+                          <div className="flex justify-between text-sm">
+                            <span className="text-green-500">Income</span>
+                            <span>{formatCurrency(item.income)}</span>
+                          </div>
+                          <div className="h-2 w-full rounded-full bg-muted">
+                            <div
+                              className="h-full rounded-full bg-green-500"
+                              style={{
+                                width: `${Math.min(100, (item.income / Math.max(item.income, item.expenses)) * 100)}%`,
+                              }}
+                            ></div>
+                          </div>
+                        </div>
+                        <div className="space-y-2">
+                          <div className="flex justify-between text-sm">
+                            <span className="text-red-500">Expenses</span>
+                            <span>{formatCurrency(item.expenses)}</span>
+                          </div>
+                          <div className="h-2 w-full rounded-full bg-muted">
+                            <div
+                              className="h-full rounded-full bg-red-500"
+                              style={{
+                                width: `${Math.min(100, (item.expenses / Math.max(item.income, item.expenses)) * 100)}%`,
+                              }}
+                            ></div>
+                          </div>
+                        </div>
+                        <div className="pt-2 border-t">
+                          <div className="flex justify-between text-sm font-medium">
+                            <span>Balance</span>
+                            <span className={item.income - item.expenses >= 0 ? "text-green-500" : "text-red-500"}>
+                              {formatCurrency(item.income - item.expenses)}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 ) : (
                   <div className="flex h-full items-center justify-center">
                     <div className="text-center">
@@ -581,74 +532,39 @@ export default function ReportsPage() {
               <CardDescription>Your spending patterns over time.</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="h-[400px]">
+              <div className="h-[400px] overflow-auto">
                 {spendingTrendsData.length > 0 ? (
-                  <Chart>
-                    <ChartContainer>
-                      <ResponsiveContainer width="100%" height="100%">
-                        <RechartsLineChart
-                          data={spendingTrendsData}
-                          margin={{
-                            top: 20,
-                            right: 30,
-                            left: 20,
-                            bottom: 5,
-                          }}
-                        >
-                          <CartesianGrid strokeDasharray="3 3" />
-                          <XAxis
-                            dataKey="date"
-                            tickFormatter={(value) => {
-                              const date = new Date(value)
-                              return date.toLocaleDateString("en-US", { month: "short", day: "numeric" })
-                            }}
-                          />
-                          <YAxis tickFormatter={(value) => `$${value}`} />
-                          <Tooltip
-                            formatter={(value: number) => formatCurrency(value)}
-                            labelFormatter={(label) => {
-                              const date = new Date(label)
-                              return date.toLocaleDateString("en-US", {
-                                weekday: "long",
-                                year: "numeric",
-                                month: "long",
-                                day: "numeric",
-                              })
-                            }}
-                            content={({ active, payload, label }) => {
-                              if (active && payload && payload.length) {
-                                const date = new Date(label)
-                                return (
-                                  <ChartTooltip>
-                                    <ChartTooltipContent>
-                                      <div className="font-medium">
-                                        {date.toLocaleDateString("en-US", {
-                                          weekday: "long",
-                                          year: "numeric",
-                                          month: "long",
-                                          day: "numeric",
-                                        })}
-                                      </div>
-                                      <div>Spent: {formatCurrency(payload[0].value as number)}</div>
-                                    </ChartTooltipContent>
-                                  </ChartTooltip>
-                                )
-                              }
-                              return null
-                            }}
-                          />
-                          <Legend />
-                          <Line
-                            type="monotone"
-                            dataKey="amount"
-                            stroke="#8884d8"
-                            activeDot={{ r: 8 }}
-                            name="Spending"
-                          />
-                        </RechartsLineChart>
-                      </ResponsiveContainer>
-                    </ChartContainer>
-                  </Chart>
+                  <div className="space-y-4">
+                    <div className="flex justify-between text-sm font-medium border-b pb-2">
+                      <span>Date</span>
+                      <span>Amount</span>
+                    </div>
+                    {spendingTrendsData.map((item) => {
+                      const date = new Date(item.date)
+                      const formattedDate = date.toLocaleDateString("en-US", {
+                        weekday: "short",
+                        year: "numeric",
+                        month: "short",
+                        day: "numeric",
+                      })
+
+                      // Find max amount for scaling
+                      const maxAmount = Math.max(...spendingTrendsData.map((d) => d.amount))
+                      const percentage = (item.amount / maxAmount) * 100
+
+                      return (
+                        <div key={item.date} className="space-y-2">
+                          <div className="flex justify-between text-sm">
+                            <span>{formattedDate}</span>
+                            <span>{formatCurrency(item.amount)}</span>
+                          </div>
+                          <div className="h-2 w-full rounded-full bg-muted">
+                            <div className="h-full rounded-full bg-primary" style={{ width: `${percentage}%` }}></div>
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </div>
                 ) : (
                   <div className="flex h-full items-center justify-center">
                     <div className="text-center">
@@ -675,49 +591,53 @@ export default function ReportsPage() {
               <CardDescription>Comparison of your budgeted amounts versus actual spending.</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="h-[400px]">
+              <div className="h-[400px] overflow-auto">
                 {budgetVsActualData.length > 0 ? (
-                  <Chart>
-                    <ChartContainer>
-                      <ResponsiveContainer width="100%" height="100%">
-                        <RechartsBarChart
-                          data={budgetVsActualData}
-                          margin={{
-                            top: 20,
-                            right: 30,
-                            left: 20,
-                            bottom: 5,
-                          }}
-                        >
-                          <CartesianGrid strokeDasharray="3 3" />
-                          <XAxis dataKey="name" />
-                          <YAxis tickFormatter={(value) => `$${value}`} />
-                          <Tooltip
-                            formatter={(value: number) => formatCurrency(value)}
-                            content={({ active, payload, label }) => {
-                              if (active && payload && payload.length) {
-                                return (
-                                  <ChartTooltip>
-                                    <ChartTooltipContent>
-                                      <div className="font-medium">{label}</div>
-                                      <div>Budget: {formatCurrency(payload[0].value as number)}</div>
-                                      <div>Actual: {formatCurrency(payload[1].value as number)}</div>
-                                      <div>Remaining: {formatCurrency(payload[2].value as number)}</div>
-                                    </ChartTooltipContent>
-                                  </ChartTooltip>
-                                )
-                              }
-                              return null
-                            }}
-                          />
-                          <Legend />
-                          <Bar dataKey="budget" fill="#8884d8" name="Budget" />
-                          <Bar dataKey="actual" fill="#82ca9d" name="Actual" />
-                          <Bar dataKey="remaining" fill="#ffc658" name="Remaining" />
-                        </RechartsBarChart>
-                      </ResponsiveContainer>
-                    </ChartContainer>
-                  </Chart>
+                  <div className="space-y-6">
+                    {budgetVsActualData.map((item) => {
+                      const percentSpent = Math.min(100, (item.actual / item.budget) * 100)
+                      const percentRemaining = Math.max(0, 100 - percentSpent)
+
+                      return (
+                        <div key={item.name} className="space-y-4">
+                          <h3 className="font-medium">{item.name}</h3>
+                          <div className="space-y-2">
+                            <div className="flex justify-between text-sm">
+                              <span>Budget</span>
+                              <span>{formatCurrency(item.budget)}</span>
+                            </div>
+                            <div className="h-2 w-full rounded-full bg-muted">
+                              <div className="h-full w-full rounded-full bg-primary/30"></div>
+                            </div>
+                          </div>
+                          <div className="space-y-2">
+                            <div className="flex justify-between text-sm">
+                              <span>Actual</span>
+                              <span>{formatCurrency(item.actual)}</span>
+                            </div>
+                            <div className="h-2 w-full rounded-full bg-muted">
+                              <div
+                                className={`h-full rounded-full ${percentSpent > 90 ? "bg-red-500" : "bg-primary"}`}
+                                style={{ width: `${percentSpent}%` }}
+                              ></div>
+                            </div>
+                          </div>
+                          <div className="space-y-2">
+                            <div className="flex justify-between text-sm">
+                              <span>Remaining</span>
+                              <span>{formatCurrency(item.remaining)}</span>
+                            </div>
+                            <div className="h-2 w-full rounded-full bg-muted">
+                              <div
+                                className="h-full rounded-full bg-green-500"
+                                style={{ width: `${percentRemaining}%` }}
+                              ></div>
+                            </div>
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </div>
                 ) : (
                   <div className="flex h-full items-center justify-center">
                     <div className="text-center">
