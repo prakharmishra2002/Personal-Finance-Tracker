@@ -224,28 +224,28 @@ export default function TransactionsPage() {
 
   return (
     <DashboardLayout>
-      <div className="flex items-center justify-between space-y-2">
-        <h2 className="text-3xl font-bold tracking-tight">Transactions</h2>
-        <div className="flex items-center space-x-2">
-          <Button variant="outline" onClick={exportTransactions}>
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4">
+        <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">Transactions</h2>
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
+          <Button variant="outline" onClick={exportTransactions} className="w-full sm:w-auto">
             <Download className="mr-2 h-4 w-4" /> Export
           </Button>
-          <Button onClick={() => setShowAddTransaction(true)}>
+          <Button onClick={() => setShowAddTransaction(true)} className="w-full sm:w-auto">
             <Plus className="mr-2 h-4 w-4" /> Add Transaction
           </Button>
         </div>
       </div>
 
       {/* Filters */}
-      <Card className="mt-6">
+      <Card className="mt-4 sm:mt-6">
         <CardHeader>
-          <CardTitle className="flex items-center">
-            <Filter className="mr-2 h-5 w-5" /> Filters
+          <CardTitle className="flex items-center text-base sm:text-lg">
+            <Filter className="mr-2 h-4 w-4 sm:h-5 sm:w-5" /> Filters
           </CardTitle>
-          <CardDescription>Filter your transactions by category, date range, and type.</CardDescription>
+          <CardDescription className="text-xs sm:text-sm">Filter your transactions by category, date range, and type.</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid gap-4 md:grid-cols-4">
+          <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
             <div className="space-y-2">
               <Label htmlFor="category">Category</Label>
               <Select value={filters.category} onValueChange={(value) => handleFilterChange("category", value)}>
@@ -308,12 +308,12 @@ export default function TransactionsPage() {
       </Card>
 
       {/* Transactions list */}
-      <Card className="mt-6">
+      <Card className="mt-4 sm:mt-6">
         <CardHeader>
-          <CardTitle>Transaction History</CardTitle>
-          <CardDescription>{filteredTransactions.length} transactions found</CardDescription>
+          <CardTitle className="text-base sm:text-lg">Transaction History</CardTitle>
+          <CardDescription className="text-xs sm:text-sm">{filteredTransactions.length} transactions found</CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-0 sm:p-6">
           <TransactionList transactions={filteredTransactions} onDelete={deleteTransaction} />
         </CardContent>
       </Card>

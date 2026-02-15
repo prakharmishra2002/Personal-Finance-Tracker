@@ -305,21 +305,19 @@ export default function ReportsPage() {
 
   return (
     <DashboardLayout>
-      <div className="flex items-center justify-between space-y-2">
-        <h2 className="text-3xl font-bold tracking-tight">Financial Reports</h2>
-        <div className="flex items-center space-x-2">
-          <Button variant="outline" onClick={downloadReport}>
-            <Download className="mr-2 h-4 w-4" /> Download Report
-          </Button>
-        </div>
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4">
+        <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">Financial Reports</h2>
+        <Button variant="outline" onClick={downloadReport} className="w-full sm:w-auto text-xs sm:text-sm">
+          <Download className="mr-2 h-3 w-3 sm:h-4 sm:w-4" /> Download Report
+        </Button>
       </div>
 
       {/* Filters */}
-      <div className="flex flex-col sm:flex-row gap-4 mt-6">
+      <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mt-4 sm:mt-6">
         <div className="space-y-2 flex-1">
-          <Label htmlFor="timeframe">Time Period</Label>
+          <Label htmlFor="timeframe" className="text-xs sm:text-sm">Time Period</Label>
           <Select value={timeframe} onValueChange={setTimeframe}>
-            <SelectTrigger id="timeframe">
+            <SelectTrigger id="timeframe" className="text-xs sm:text-sm">
               <SelectValue placeholder="Select timeframe" />
             </SelectTrigger>
             <SelectContent>
@@ -333,9 +331,9 @@ export default function ReportsPage() {
         </div>
 
         <div className="space-y-2 flex-1">
-          <Label htmlFor="category">Category Filter</Label>
+          <Label htmlFor="category" className="text-xs sm:text-sm">Category Filter</Label>
           <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-            <SelectTrigger id="category">
+            <SelectTrigger id="category" className="text-xs sm:text-sm">
               <SelectValue placeholder="Select category" />
             </SelectTrigger>
             <SelectContent>
@@ -350,67 +348,79 @@ export default function ReportsPage() {
       </div>
 
       {/* Summary cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mt-6">
+      <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 mt-4 sm:mt-6">
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Total Income</CardTitle>
+            <CardTitle className="text-xs sm:text-sm font-medium">Total Income</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-500">{formatCurrency(summaryStats.income)}</div>
-            <p className="text-xs text-muted-foreground">For the selected period</p>
+            <div className="text-xl sm:text-2xl font-bold text-green-500">{formatCurrency(summaryStats.income)}</div>
+            <p className="text-xs text-muted-foreground mt-1">For the selected period</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Total Expenses</CardTitle>
+            <CardTitle className="text-xs sm:text-sm font-medium">Total Expenses</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-red-500">{formatCurrency(summaryStats.expenses)}</div>
-            <p className="text-xs text-muted-foreground">For the selected period</p>
+            <div className="text-xl sm:text-2xl font-bold text-red-500">{formatCurrency(summaryStats.expenses)}</div>
+            <p className="text-xs text-muted-foreground mt-1">For the selected period</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Net Balance</CardTitle>
+            <CardTitle className="text-xs sm:text-sm font-medium">Net Balance</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className={`text-2xl font-bold ${summaryStats.balance >= 0 ? "text-green-500" : "text-red-500"}`}>
+            <div className={`text-xl sm:text-2xl font-bold ${summaryStats.balance >= 0 ? "text-green-500" : "text-red-500"}`}>
               {formatCurrency(summaryStats.balance)}
             </div>
-            <p className="text-xs text-muted-foreground">Income minus expenses</p>
+            <p className="text-xs text-muted-foreground mt-1">Income minus expenses</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Transactions</CardTitle>
+            <CardTitle className="text-xs sm:text-sm font-medium">Transactions</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{summaryStats.transactionCount}</div>
-            <p className="text-xs text-muted-foreground">Total transactions in period</p>
+            <div className="text-xl sm:text-2xl font-bold">{summaryStats.transactionCount}</div>
+            <p className="text-xs text-muted-foreground mt-1">Total transactions in period</p>
           </CardContent>
         </Card>
       </div>
 
       {/* Charts */}
-      <Tabs defaultValue="spending" className="mt-6">
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="spending">Spending by Category</TabsTrigger>
-          <TabsTrigger value="income">Income vs Expenses</TabsTrigger>
-          <TabsTrigger value="trends">Spending Trends</TabsTrigger>
-          <TabsTrigger value="budget">Budget vs Actual</TabsTrigger>
+      <Tabs defaultValue="spending" className="mt-4 sm:mt-6">
+        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 h-auto">
+          <TabsTrigger value="spending" className="text-xs sm:text-sm py-2">
+            <span className="hidden sm:inline">Spending by Category</span>
+            <span className="sm:hidden">Spending</span>
+          </TabsTrigger>
+          <TabsTrigger value="income" className="text-xs sm:text-sm py-2">
+            <span className="hidden sm:inline">Income vs Expenses</span>
+            <span className="sm:hidden">Income</span>
+          </TabsTrigger>
+          <TabsTrigger value="trends" className="text-xs sm:text-sm py-2">
+            <span className="hidden sm:inline">Spending Trends</span>
+            <span className="sm:hidden">Trends</span>
+          </TabsTrigger>
+          <TabsTrigger value="budget" className="text-xs sm:text-sm py-2">
+            <span className="hidden sm:inline">Budget vs Actual</span>
+            <span className="sm:hidden">Budget</span>
+          </TabsTrigger>
         </TabsList>
 
         {/* Spending by Category Chart */}
         <TabsContent value="spending">
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center">
-                <PieChart className="mr-2 h-5 w-5" /> Spending by Category
+              <CardTitle className="flex items-center text-base sm:text-lg">
+                <PieChart className="mr-2 h-4 w-4 sm:h-5 sm:w-5" /> Spending by Category
               </CardTitle>
-              <CardDescription>Breakdown of your expenses by category for the selected period.</CardDescription>
+              <CardDescription className="text-xs sm:text-sm">Breakdown of your expenses by category for the selected period.</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="h-[400px] overflow-auto">
@@ -422,7 +432,7 @@ export default function ReportsPage() {
 
                       return (
                         <div key={item.name} className="space-y-2">
-                          <div className="flex justify-between text-sm">
+                          <div className="flex justify-between text-xs sm:text-sm">
                             <span className="font-medium">{item.name}</span>
                             <span>
                               {formatCurrency(item.value)} ({percentage}%)
@@ -437,10 +447,10 @@ export default function ReportsPage() {
                   </div>
                 ) : (
                   <div className="flex h-full items-center justify-center">
-                    <div className="text-center">
-                      <PieChart className="mx-auto h-12 w-12 text-muted-foreground/50" />
-                      <h3 className="mt-4 text-lg font-medium">No Data Available</h3>
-                      <p className="mt-2 text-sm text-muted-foreground">
+                    <div className="text-center p-4">
+                      <PieChart className="mx-auto h-10 w-10 sm:h-12 sm:w-12 text-muted-foreground/50" />
+                      <h3 className="mt-4 text-base sm:text-lg font-medium">No Data Available</h3>
+                      <p className="mt-2 text-xs sm:text-sm text-muted-foreground">
                         There are no expenses in the selected period to display.
                       </p>
                     </div>

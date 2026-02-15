@@ -139,75 +139,73 @@ export default function DashboardPage() {
 
   return (
     <DashboardLayout>
-      <div className="flex items-center justify-between space-y-2">
-        <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
-        <div className="flex items-center space-x-2">
-          <Button onClick={() => setShowAddTransaction(true)}>
-            <Plus className="mr-2 h-4 w-4" /> Add Transaction
-          </Button>
-        </div>
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4">
+        <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">Dashboard</h2>
+        <Button onClick={() => setShowAddTransaction(true)} className="w-full sm:w-auto">
+          <Plus className="mr-2 h-4 w-4" /> Add Transaction
+        </Button>
       </div>
 
       <Tabs defaultValue="overview" className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="transactions">Transactions</TabsTrigger>
-          <TabsTrigger value="analytics">Analytics</TabsTrigger>
-          <TabsTrigger value="currency">Currency Converter</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 h-auto">
+          <TabsTrigger value="overview" className="text-xs sm:text-sm">Overview</TabsTrigger>
+          <TabsTrigger value="transactions" className="text-xs sm:text-sm">Transactions</TabsTrigger>
+          <TabsTrigger value="analytics" className="text-xs sm:text-sm">Analytics</TabsTrigger>
+          <TabsTrigger value="currency" className="text-xs sm:text-sm">Currency</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="space-y-4">
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
             <Card className="transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Total Balance</CardTitle>
+                <CardTitle className="text-xs sm:text-sm font-medium">Total Balance</CardTitle>
                 <Wallet className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold animate-in fade-in-50 duration-500">
+                <div className="text-xl sm:text-2xl font-bold animate-in fade-in-50 duration-500">
                   ${summary.balance.toFixed(2)}
                 </div>
-                <p className="text-xs text-muted-foreground">Current balance across all accounts</p>
+                <p className="text-xs text-muted-foreground mt-1">Current balance across all accounts</p>
               </CardContent>
             </Card>
             <Card className="transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Income</CardTitle>
+                <CardTitle className="text-xs sm:text-sm font-medium">Income</CardTitle>
                 <ArrowUpRight className="h-4 w-4 text-green-500" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-green-500 animate-in fade-in-50 duration-500">
+                <div className="text-xl sm:text-2xl font-bold text-green-500 animate-in fade-in-50 duration-500">
                   ${summary.income.toFixed(2)}
                 </div>
-                <p className="text-xs text-muted-foreground">Total income this month</p>
+                <p className="text-xs text-muted-foreground mt-1">Total income this month</p>
               </CardContent>
             </Card>
             <Card className="transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Expenses</CardTitle>
+                <CardTitle className="text-xs sm:text-sm font-medium">Expenses</CardTitle>
                 <ArrowDownRight className="h-4 w-4 text-red-500" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-red-500 animate-in fade-in-50 duration-500">
+                <div className="text-xl sm:text-2xl font-bold text-red-500 animate-in fade-in-50 duration-500">
                   ${summary.expenses.toFixed(2)}
                 </div>
-                <p className="text-xs text-muted-foreground">Total expenses this month</p>
+                <p className="text-xs text-muted-foreground mt-1">Total expenses this month</p>
               </CardContent>
             </Card>
           </div>
 
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-            <Card className="col-span-4">
+          <div className="grid gap-4 grid-cols-1 lg:grid-cols-7">
+            <Card className="lg:col-span-4">
               <CardHeader>
-                <CardTitle>Recent Activity</CardTitle>
+                <CardTitle className="text-base sm:text-lg">Recent Activity</CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="p-0 sm:p-6">
                 <TransactionList transactions={transactions.slice(0, 5)} onDelete={deleteTransaction} />
               </CardContent>
             </Card>
-            <Card className="col-span-3">
+            <Card className="lg:col-span-3">
               <CardHeader>
-                <CardTitle>Spending by Category</CardTitle>
+                <CardTitle className="text-base sm:text-lg">Spending by Category</CardTitle>
               </CardHeader>
               <CardContent className="pl-2">
                 {transactions.filter((t) => t.amount < 0).length > 0 ? (
@@ -232,10 +230,10 @@ export default function DashboardPage() {
         <TabsContent value="transactions" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>All Transactions</CardTitle>
-              <CardDescription>A complete history of your financial transactions.</CardDescription>
+              <CardTitle className="text-base sm:text-lg">All Transactions</CardTitle>
+              <CardDescription className="text-xs sm:text-sm">A complete history of your financial transactions.</CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="p-0 sm:p-6">
               <TransactionList transactions={transactions} onDelete={deleteTransaction} />
             </CardContent>
           </Card>
@@ -244,8 +242,8 @@ export default function DashboardPage() {
         <TabsContent value="analytics" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Monthly Spending Trends</CardTitle>
-              <CardDescription>View your spending patterns over time.</CardDescription>
+              <CardTitle className="text-base sm:text-lg">Monthly Spending Trends</CardTitle>
+              <CardDescription className="text-xs sm:text-sm">View your spending patterns over time.</CardDescription>
             </CardHeader>
             <CardContent className="pl-2">
               <div className="flex h-[300px] items-center justify-center">
@@ -259,23 +257,23 @@ export default function DashboardPage() {
             </CardContent>
           </Card>
 
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
             <Card>
               <CardHeader>
-                <CardTitle>Income vs Expenses</CardTitle>
+                <CardTitle className="text-base sm:text-lg">Income vs Expenses</CardTitle>
               </CardHeader>
               <CardContent className="pl-2">
                 <div className="flex h-[200px] items-center justify-center">
-                  <BarChart className="h-16 w-16 text-muted-foreground/70" />
+                  <BarChart className="h-12 w-12 sm:h-16 sm:w-16 text-muted-foreground/70" />
                   <div className="ml-4">
-                    <p className="text-sm text-muted-foreground">Income vs expenses chart will appear here</p>
+                    <p className="text-xs sm:text-sm text-muted-foreground">Income vs expenses chart will appear here</p>
                   </div>
                 </div>
               </CardContent>
             </Card>
             <Card>
               <CardHeader>
-                <CardTitle>Budget Progress</CardTitle>
+                <CardTitle className="text-base sm:text-lg">Budget Progress</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
@@ -315,8 +313,8 @@ export default function DashboardPage() {
         <TabsContent value="currency" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Currency Converter</CardTitle>
-              <CardDescription>Convert between different currencies using real-time exchange rates.</CardDescription>
+              <CardTitle className="text-base sm:text-lg">Currency Converter</CardTitle>
+              <CardDescription className="text-xs sm:text-sm">Convert between different currencies using real-time exchange rates.</CardDescription>
             </CardHeader>
             <CardContent>
               <CurrencyConverter />

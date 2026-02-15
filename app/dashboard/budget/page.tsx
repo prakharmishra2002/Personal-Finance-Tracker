@@ -352,55 +352,54 @@ export default function BudgetPage() {
 
   return (
     <DashboardLayout>
-      <div className="flex items-center justify-between space-y-2">
-        <h2 className="text-3xl font-bold tracking-tight">Budget Management</h2>
-        <div className="flex items-center space-x-2">
-          <Button
-            onClick={() => {
-              setEditingBudget(null)
-              setFormData({
-                category: "",
-                amount: "",
-                period: "monthly",
-                currency: "USD",
-              })
-              setShowAddBudget(true)
-            }}
-          >
-            <Plus className="mr-2 h-4 w-4" /> Create Budget
-          </Button>
-        </div>
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4">
+        <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">Budget Management</h2>
+        <Button
+          onClick={() => {
+            setEditingBudget(null)
+            setFormData({
+              category: "",
+              amount: "",
+              period: "monthly",
+              currency: "USD",
+            })
+            setShowAddBudget(true)
+          }}
+          className="w-full sm:w-auto"
+        >
+          <Plus className="mr-2 h-4 w-4" /> Create Budget
+        </Button>
       </div>
 
       {/* Budget overview */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mt-6">
+      <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 mt-4 sm:mt-6">
         <Card className="transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Total Budgeted</CardTitle>
+            <CardTitle className="text-xs sm:text-sm font-medium">Total Budgeted</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold animate-in fade-in-50 duration-500">
+            <div className="text-xl sm:text-2xl font-bold animate-in fade-in-50 duration-500">
               {formatCurrency(
                 budgets.reduce((total, budget) => total + budget.amount, 0),
                 "USD",
               )}
             </div>
-            <p className="text-xs text-muted-foreground">Across {budgets.length} budget categories</p>
+            <p className="text-xs text-muted-foreground mt-1">Across {budgets.length} budget categories</p>
           </CardContent>
         </Card>
 
         <Card className="transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Total Spent</CardTitle>
+            <CardTitle className="text-xs sm:text-sm font-medium">Total Spent</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold animate-in fade-in-50 duration-500">
+            <div className="text-xl sm:text-2xl font-bold animate-in fade-in-50 duration-500">
               {formatCurrency(
                 budgets.reduce((total, budget) => total + budget.spent, 0),
                 "USD",
               )}
             </div>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-muted-foreground mt-1">
               {Math.round(
                 (budgets.reduce((total, budget) => total + budget.spent, 0) /
                   budgets.reduce((total, budget) => total + budget.amount, 0)) *
@@ -413,31 +412,31 @@ export default function BudgetPage() {
 
         <Card className="transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Remaining</CardTitle>
+            <CardTitle className="text-xs sm:text-sm font-medium">Remaining</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold animate-in fade-in-50 duration-500">
+            <div className="text-xl sm:text-2xl font-bold animate-in fade-in-50 duration-500">
               {formatCurrency(
                 budgets.reduce((total, budget) => total + budget.amount, 0) -
                   budgets.reduce((total, budget) => total + budget.spent, 0),
                 "USD",
               )}
             </div>
-            <p className="text-xs text-muted-foreground">Available to spend this period</p>
+            <p className="text-xs text-muted-foreground mt-1">Available to spend this period</p>
           </CardContent>
         </Card>
 
         <Card className="transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Budget Health</CardTitle>
+            <CardTitle className="text-xs sm:text-sm font-medium">Budget Health</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold animate-in fade-in-50 duration-500">
+            <div className="text-lg sm:text-2xl font-bold animate-in fade-in-50 duration-500">
               {budgets.filter((b) => calculateProgress(b.spent, b.amount) >= 90).length > 0
                 ? "Attention Needed"
                 : "Good Standing"}
             </div>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-muted-foreground mt-1">
               {budgets.filter((b) => calculateProgress(b.spent, b.amount) >= 90).length} categories need attention
             </p>
           </CardContent>
@@ -445,7 +444,7 @@ export default function BudgetPage() {
       </div>
 
       {/* Budget list */}
-      <div className="grid gap-4 md:grid-cols-2 mt-6">
+      <div className="grid gap-4 grid-cols-1 md:grid-cols-2 mt-4 sm:mt-6">
         {budgets.map((budget) => (
           <Card
             key={budget.id}
@@ -453,22 +452,22 @@ export default function BudgetPage() {
           >
             <CardHeader className="pb-2">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-lg font-medium">{budget.category}</CardTitle>
-                <div className="flex space-x-2">
-                  <Button variant="ghost" size="icon" onClick={() => handleEdit(budget)}>
-                    <Edit2 className="h-4 w-4" />
+                <CardTitle className="text-base sm:text-lg font-medium">{budget.category}</CardTitle>
+                <div className="flex space-x-1 sm:space-x-2">
+                  <Button variant="ghost" size="icon" onClick={() => handleEdit(budget)} className="h-8 w-8">
+                    <Edit2 className="h-3 w-3 sm:h-4 sm:w-4" />
                     <span className="sr-only">Edit</span>
                   </Button>
-                  <Button variant="ghost" size="icon" onClick={() => handleDelete(budget.id)}>
-                    <Trash2 className="h-4 w-4" />
+                  <Button variant="ghost" size="icon" onClick={() => handleDelete(budget.id)} className="h-8 w-8">
+                    <Trash2 className="h-3 w-3 sm:h-4 sm:w-4" />
                     <span className="sr-only">Delete</span>
                   </Button>
                 </div>
               </div>
-              <CardDescription>{budget.period.charAt(0).toUpperCase() + budget.period.slice(1)} Budget</CardDescription>
+              <CardDescription className="text-xs sm:text-sm">{budget.period.charAt(0).toUpperCase() + budget.period.slice(1)} Budget</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="flex justify-between mb-2">
+              <div className="flex justify-between mb-2 text-xs sm:text-sm">
                 <span>
                   {formatCurrency(budget.spent, budget.currency)} of {formatCurrency(budget.amount, budget.currency)}
                 </span>
@@ -479,7 +478,7 @@ export default function BudgetPage() {
                       : "text-muted-foreground"
                   }
                 >
-                  {calculateProgress(budget.spent, budget.amount) >= 90 && <AlertCircle className="h-4 w-4 mr-1" />}
+                  {calculateProgress(budget.spent, budget.amount) >= 90 && <AlertCircle className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />}
                   {getStatusText(budget.spent, budget.amount)}
                 </span>
               </div>

@@ -274,25 +274,33 @@ export default function SettingsPage() {
 
   return (
     <DashboardLayout>
-      <div className="space-y-6">
+      <div className="space-y-4 sm:space-y-6">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight">Settings</h2>
-          <p className="text-muted-foreground">Manage your account settings and preferences.</p>
+          <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">Settings</h2>
+          <p className="text-sm sm:text-base text-muted-foreground">Manage your account settings and preferences.</p>
         </div>
 
         <Tabs defaultValue="profile" className="space-y-4">
-          <TabsList>
-            <TabsTrigger value="profile" className="flex items-center">
-              <User className="mr-2 h-4 w-4" /> Profile
+          <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 h-auto">
+            <TabsTrigger value="profile" className="flex items-center text-xs sm:text-sm py-2">
+              <User className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" /> 
+              <span className="hidden sm:inline">Profile</span>
+              <span className="sm:hidden">Profile</span>
             </TabsTrigger>
-            <TabsTrigger value="password" className="flex items-center">
-              <Lock className="mr-2 h-4 w-4" /> Password
+            <TabsTrigger value="password" className="flex items-center text-xs sm:text-sm py-2">
+              <Lock className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" /> 
+              <span className="hidden sm:inline">Password</span>
+              <span className="sm:hidden">Pass</span>
             </TabsTrigger>
-            <TabsTrigger value="notifications" className="flex items-center">
-              <Bell className="mr-2 h-4 w-4" /> Notifications
+            <TabsTrigger value="notifications" className="flex items-center text-xs sm:text-sm py-2">
+              <Bell className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" /> 
+              <span className="hidden sm:inline">Notifications</span>
+              <span className="sm:hidden">Notif</span>
             </TabsTrigger>
-            <TabsTrigger value="preferences" className="flex items-center">
-              <Globe className="mr-2 h-4 w-4" /> Preferences
+            <TabsTrigger value="preferences" className="flex items-center text-xs sm:text-sm py-2">
+              <Globe className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" /> 
+              <span className="hidden sm:inline">Preferences</span>
+              <span className="sm:hidden">Pref</span>
             </TabsTrigger>
           </TabsList>
 
@@ -300,13 +308,13 @@ export default function SettingsPage() {
           <TabsContent value="profile">
             <Card>
               <CardHeader>
-                <CardTitle>Profile</CardTitle>
-                <CardDescription>Update your personal information.</CardDescription>
+                <CardTitle className="text-base sm:text-lg">Profile</CardTitle>
+                <CardDescription className="text-xs sm:text-sm">Update your personal information.</CardDescription>
               </CardHeader>
               <form onSubmit={handleProfileSubmit}>
                 <CardContent className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="name">Full Name</Label>
+                    <Label htmlFor="name" className="text-xs sm:text-sm">Full Name</Label>
                     <Input
                       id="name"
                       name="name"
@@ -314,10 +322,11 @@ export default function SettingsPage() {
                       value={profileForm.name}
                       onChange={handleProfileChange}
                       required
+                      className="text-sm"
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="email">Email</Label>
+                    <Label htmlFor="email" className="text-xs sm:text-sm">Email</Label>
                     <Input
                       id="email"
                       name="email"
@@ -326,11 +335,12 @@ export default function SettingsPage() {
                       value={profileForm.email}
                       onChange={handleProfileChange}
                       required
+                      className="text-sm"
                     />
                   </div>
                 </CardContent>
                 <CardFooter>
-                  <Button type="submit">Save Changes</Button>
+                  <Button type="submit" className="w-full sm:w-auto text-xs sm:text-sm">Save Changes</Button>
                 </CardFooter>
               </form>
             </Card>
@@ -540,21 +550,21 @@ export default function SettingsPage() {
         {/* Danger Zone */}
         <Card className="border-red-200">
           <CardHeader>
-            <CardTitle className="text-red-500">Danger Zone</CardTitle>
-            <CardDescription>Irreversible actions that affect your account.</CardDescription>
+            <CardTitle className="text-red-500 text-base sm:text-lg">Danger Zone</CardTitle>
+            <CardDescription className="text-xs sm:text-sm">Irreversible actions that affect your account.</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
               <div>
-                <h4 className="font-medium">Delete Account</h4>
-                <p className="text-sm text-muted-foreground">
+                <h4 className="font-medium text-sm sm:text-base">Delete Account</h4>
+                <p className="text-xs sm:text-sm text-muted-foreground">
                   Permanently delete your account and all associated data.
                 </p>
               </div>
               <AlertDialog>
                 <AlertDialogTrigger asChild>
-                  <Button variant="destructive">
-                    <Trash2 className="mr-2 h-4 w-4" /> Delete Account
+                  <Button variant="destructive" className="w-full sm:w-auto text-xs sm:text-sm">
+                    <Trash2 className="mr-2 h-3 w-3 sm:h-4 sm:w-4" /> Delete Account
                   </Button>
                 </AlertDialogTrigger>
                 <AlertDialogContent>

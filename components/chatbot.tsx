@@ -155,7 +155,7 @@ export function Chatbot() {
 
       {/* Chat window */}
       {isOpen && (
-        <div className="fixed bottom-24 right-6 z-50 w-80 sm:w-96 shadow-xl">
+        <div className="fixed bottom-20 sm:bottom-24 right-2 sm:right-6 left-2 sm:left-auto z-50 w-auto sm:w-96 shadow-xl max-w-[calc(100vw-1rem)] sm:max-w-none">
           <Card className="border-primary/10">
             <CardHeader className="bg-muted/50 pb-3">
               <div className="flex items-center justify-between">

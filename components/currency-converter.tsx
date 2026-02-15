@@ -1,3 +1,22 @@
+/**
+ * Currency Converter Component
+ * 
+ * A real-time currency converter with the following features:
+ * - Convert between 10 different currencies
+ * - Mock exchange rates (simulates API calls)
+ * - Swap currencies functionality
+ * - Refresh rates button
+ * - Last updated timestamp
+ * - Responsive layout
+ * 
+ * Note: This uses mock exchange rates for demonstration.
+ * In production, you would integrate with a real currency API like:
+ * - Open Exchange Rates (https://openexchangerates.org/)
+ * - Fixer.io (https://fixer.io/)
+ * - Currencylayer (https://currencylayer.com/)
+ * - ExchangeRate-API (https://www.exchangerate-api.com/)
+ */
+
 "use client"
 
 import type React from "react"
@@ -10,14 +29,16 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ArrowRightLeft, RefreshCw } from "lucide-react"
 
 export default function CurrencyConverter() {
-  const [amount, setAmount] = useState<string>("1")
-  const [fromCurrency, setFromCurrency] = useState<string>("USD")
-  const [toCurrency, setToCurrency] = useState<string>("EUR")
-  const [convertedAmount, setConvertedAmount] = useState<string>("")
-  const [exchangeRate, setExchangeRate] = useState<number | null>(null)
-  const [loading, setLoading] = useState<boolean>(false)
-  const [lastUpdated, setLastUpdated] = useState<string>("")
+  // State management
+  const [amount, setAmount] = useState<string>("1") // Amount to convert
+  const [fromCurrency, setFromCurrency] = useState<string>("USD") // Source currency
+  const [toCurrency, setToCurrency] = useState<string>("EUR") // Target currency
+  const [convertedAmount, setConvertedAmount] = useState<string>("") // Conversion result
+  const [exchangeRate, setExchangeRate] = useState<number | null>(null) // Current exchange rate
+  const [loading, setLoading] = useState<boolean>(false) // Loading state during rate fetch
+  const [lastUpdated, setLastUpdated] = useState<string>("") // Timestamp of last rate update
 
+  // Available currencies for conversion
   const currencies = [
     { value: "USD", label: "US Dollar (USD)" },
     { value: "EUR", label: "Euro (EUR)" },
@@ -31,7 +52,13 @@ export default function CurrencyConverter() {
     { value: "ZAR", label: "South African Rand (ZAR)" },
   ]
 
-  // Mock exchange rates (in a real app, you would fetch these from an API)
+  /**
+   * Mock exchange rates data structure
+   * In production, this would be fetched from a currency API
+   * 
+   * Structure: { fromCurrency: { toCurrency: rate } }
+   * Example: USD to EUR rate is 0.92
+   */
   const mockExchangeRates: Record<string, Record<string, number>> = {
     USD: {
       EUR: 0.92,
@@ -69,10 +96,16 @@ export default function CurrencyConverter() {
       ZAR: 23.35,
       GBP: 1,
     },
-    // Add more currencies as needed
+    // Additional currencies would be added here in a complete implementation
   }
 
-  // Function to get exchange rate
+  /**
+   * Fetches exchange rate for the given currency pair
+   * Simulates an API call with a 500ms delay
+   * 
+   * @param from - Source currency code
+   * @param to - Target currency code
+   */
   const getExchangeRate = (from: string, to: string) => {
     setLoading(true)
 
@@ -80,11 +113,11 @@ export default function CurrencyConverter() {
     setTimeout(() => {
       let rate: number
 
-      // Check if we have a direct rate
+      // Check if we have a direct rate from -> to
       if (mockExchangeRates[from] && mockExchangeRates[from][to]) {
         rate = mockExchangeRates[from][to]
       }
-      // If not, try to calculate via USD
+      // If not, try to calculate via USD as intermediary
       else if (
         mockExchangeRates[from] &&
         mockExchangeRates[from]["USD"] &&
@@ -93,15 +126,16 @@ export default function CurrencyConverter() {
       ) {
         rate = mockExchangeRates[from]["USD"] * mockExchangeRates["USD"][to]
       }
-      // Default fallback
+      // Default fallback (1:1 rate)
       else {
         rate = 1
       }
 
-      // Add some randomness to simulate real-time rates
-      const randomFactor = 0.995 + Math.random() * 0.01
+      // Add slight randomness to simulate real-time rate fluctuations
+      const randomFactor = 0.995 + Math.random() * 0.01 // ±0.5% variation
       rate = rate * randomFactor
 
+      // Update state with new rate
       setExchangeRate(rate)
       convert(amount, rate)
       setLastUpdated(new Date().toLocaleTimeString())
@@ -109,7 +143,12 @@ export default function CurrencyConverter() {
     }, 500)
   }
 
-  // Function to convert amount
+  /**
+   * Converts the amount using the current exchange rate
+   * 
+   * @param value - Amount to convert
+   * @param rate - Exchange rate to use
+   */
   const convert = (value: string, rate: number) => {
     if (value && !isNaN(Number.parseFloat(value)) && rate) {
       const result = Number.parseFloat(value) * rate
@@ -119,21 +158,30 @@ export default function CurrencyConverter() {
     }
   }
 
-  // Swap currencies
+  /**
+   * Swaps the from and to currencies
+   * Useful for quick reverse conversion
+   */
   const swapCurrencies = () => {
     setFromCurrency(toCurrency)
     setToCurrency(fromCurrency)
-    // We'll trigger the conversion in useEffect when currencies change
+    // The useEffect will trigger conversion when currencies change
   }
 
-  // Effect to update conversion when inputs change
+  /**
+   * Effect: Update conversion when currencies change
+   * Fetches new exchange rate whenever from or to currency changes
+   */
   useEffect(() => {
     if (fromCurrency && toCurrency) {
       getExchangeRate(fromCurrency, toCurrency)
     }
   }, [fromCurrency, toCurrency])
 
-  // Handle amount change
+  /**
+   * Handles amount input changes
+   * Updates the converted amount in real-time
+   */
   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value
     setAmount(value)
@@ -143,8 +191,8 @@ export default function CurrencyConverter() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="grid gap-4 sm:grid-cols-[1fr_auto_1fr]">
+    <div className="space-y-4 sm:space-y-6">
+      <div className="grid gap-4 grid-cols-1 sm:grid-cols-[1fr_auto_1fr]">
         <div className="space-y-2">
           <Label htmlFor="amount">Amount</Label>
           <Input
@@ -158,7 +206,7 @@ export default function CurrencyConverter() {
           />
         </div>
 
-        <div className="flex items-end justify-center pb-2">
+        <div className="flex items-center justify-center sm:items-end sm:pb-2 order-last sm:order-none">
           <Button variant="outline" size="icon" onClick={swapCurrencies} className="h-10 w-10">
             <ArrowRightLeft className="h-4 w-4" />
             <span className="sr-only">Swap currencies</span>
@@ -205,8 +253,8 @@ export default function CurrencyConverter() {
         </div>
       </div>
 
-      <div className="flex items-center justify-between">
-        <div className="text-sm text-muted-foreground">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+        <div className="text-xs sm:text-sm text-muted-foreground">
           {exchangeRate ? (
             <span>
               1 {fromCurrency} = {exchangeRate.toFixed(4)} {toCurrency}
@@ -221,6 +269,7 @@ export default function CurrencyConverter() {
           size="sm"
           onClick={() => getExchangeRate(fromCurrency, toCurrency)}
           disabled={loading}
+          className="w-full sm:w-auto"
         >
           {loading ? <RefreshCw className="mr-2 h-4 w-4 animate-spin" /> : <RefreshCw className="mr-2 h-4 w-4" />}
           Refresh
@@ -229,8 +278,8 @@ export default function CurrencyConverter() {
 
       {lastUpdated && <div className="text-xs text-muted-foreground text-right">Last updated: {lastUpdated}</div>}
 
-      <div className="rounded-md bg-muted p-4 text-sm">
-        <p className="font-medium">Note:</p>
+      <div className="rounded-md bg-muted p-3 sm:p-4 text-xs sm:text-sm">
+        <p className="font-medium mb-1">Note:</p>
         <p className="text-muted-foreground">
           This is a demo currency converter using simulated exchange rates. In a production app, you would connect to a
           real-time currency API like Open Exchange Rates, Fixer.io, or Currencylayer to get accurate, up-to-date
