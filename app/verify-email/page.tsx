@@ -1,16 +1,27 @@
+/**
+ * Email Verification Page
+ * 
+ * Handles email verification with real database integration
+ * Features:
+ * - Token validation
+ * - Expiry check
+ * - Auto-login after verification
+ * - Error handling
+ */
+
 "use client"
 
 import { useEffect, useState } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { EmailService } from "@/services/email-service"
 import { CheckCircle2, XCircle, Loader2 } from "lucide-react"
 import Link from "next/link"
 
 export default function VerifyEmailPage() {
   const [verifying, setVerifying] = useState(true)
   const [verified, setVerified] = useState(false)
+  const [errorMessage, setErrorMessage] = useState("")
   const router = useRouter()
   const searchParams = useSearchParams()
 
@@ -19,32 +30,43 @@ export default function VerifyEmailPage() {
 
     if (!token) {
       setVerifying(false)
+      setErrorMessage("No verification token provided")
       return
     }
 
     const verifyToken = async () => {
-      // Verify the token
-      const result = EmailService.verifyToken(token)
+      try {
+        // Call verification API
+        const response = await fetch('/api/auth/verify-email', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ token }),
+        })
 
-      if (result.valid && result.userData) {
-        // Token is valid, complete registration
-        const user = result.userData
+        const data = await response.json()
 
-        // Get existing users or initialize empty array
-        const existingUsers = JSON.parse(localStorage.getItem("users") || "[]")
+        if (!response.ok) {
+          throw new Error(data.error || 'Verification failed')
+        }
 
-        // Save user to localStorage
-        localStorage.setItem("users", JSON.stringify([...existingUsers, user]))
-
-        // Create auth token
-        const authToken = btoa(`${user.id}:${Date.now()}`)
-        localStorage.setItem("authToken", authToken)
-        localStorage.setItem("currentUser", JSON.stringify(user))
+        // Verification successful - store user data and token
+        localStorage.setItem("authToken", data.token)
+        localStorage.setItem("currentUser", JSON.stringify(data.user))
 
         setVerified(true)
-      }
 
-      setVerifying(false)
+        // Auto-redirect to dashboard after 2 seconds
+        setTimeout(() => {
+          router.push("/dashboard")
+        }, 2000)
+
+      } catch (error: any) {
+        setErrorMessage(error.message || 'Verification failed')
+      } finally {
+        setVerifying(false)
+      }
     }
 
     verifyToken()
@@ -62,12 +84,12 @@ export default function VerifyEmailPage() {
           {verifying ? (
             <CardDescription className="text-center">Verifying your email address...</CardDescription>
           ) : verified ? (
-            <CardDescription className="text-center text-green-500">
+            <CardDescription className="text-center text-green-600">
               Your email has been successfully verified!
             </CardDescription>
           ) : (
-            <CardDescription className="text-center text-red-500">
-              The verification link is invalid or has expired.
+            <CardDescription className="text-center text-red-600">
+              {errorMessage || "Verification failed"}
             </CardDescription>
           )}
         </CardHeader>
@@ -83,7 +105,7 @@ export default function VerifyEmailPage() {
               <div className="text-center">
                 <h2 className="text-xl font-semibold">Email Verified!</h2>
                 <p className="text-muted-foreground mt-2">
-                  Your email has been successfully verified and your account is now active.
+                  Your email has been successfully verified. Redirecting to dashboard...
                 </p>
               </div>
             </div>
@@ -93,7 +115,7 @@ export default function VerifyEmailPage() {
               <div className="text-center">
                 <h2 className="text-xl font-semibold">Verification Failed</h2>
                 <p className="text-muted-foreground mt-2">
-                  The verification link is invalid or has expired. Please try registering again.
+                  {errorMessage || "The verification link is invalid or has expired."}
                 </p>
               </div>
             </div>

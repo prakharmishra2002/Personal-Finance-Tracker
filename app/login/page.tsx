@@ -1,31 +1,18 @@
 /**
  * Login Page Component
  * 
- * This page handles user authentication and login.
- * 
+ * Handles user authentication with real database integration
  * Features:
- * - Email and password input fields
- * - Form validation
- * - Authentication using localStorage (demo only)
- * - Loading state during login
- * - Error handling with toast notifications
- * - Redirect to dashboard on successful login
- * - Link to registration page
- * 
- * Security Note: This is a demo implementation using localStorage.
- * In production, you should:
- * - Use secure authentication (JWT, OAuth, etc.)
- * - Hash passwords (bcrypt, argon2)
- * - Implement HTTPS
- * - Add CSRF protection
- * - Use secure session management
- * - Implement rate limiting
+ * - Email and password validation
+ * - Password verification with bcrypt (server-side)
+ * - Email verification check
+ * - Secure session management
+ * - Error handling
  */
 
 "use client"
 
 import type React from "react"
-
 import { useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
@@ -38,71 +25,63 @@ import { PasswordInput } from "@/components/password-input"
 import { Loader2 } from "lucide-react"
 
 export default function LoginPage() {
-  // Form state management
   const [formData, setFormData] = useState({
     email: "",
     password: "",
   })
-  const [loading, setLoading] = useState(false) // Loading state for submit button
-  const router = useRouter() // Next.js router for navigation
-  const { toast } = useToast() // Toast notification hook
+  const [loading, setLoading] = useState(false)
+  const router = useRouter()
+  const { toast } = useToast()
 
-  /**
-   * Handles input field changes
-   * Updates form state as user types
-   */
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
     setFormData((prev) => ({ ...prev, [name]: value }))
   }
 
-  /**
-   * Handles form submission and authentication
-   * 
-   * Process:
-   * 1. Retrieve users from localStorage
-   * 2. Find user with matching email and password
-   * 3. Create auth token and store in localStorage
-   * 4. Redirect to dashboard on success
-   * 5. Show error message on failure
-   */
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
 
-    // Get users from localStorage (in production, this would be an API call)
-    const users = JSON.parse(localStorage.getItem("users") || "[]")
+    try {
+      // Call login API
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password,
+        }),
+      })
 
-    // Find user with matching email and password
-    // In production, password comparison would be done server-side with hashed passwords
-    const user = users.find((u: any) => u.email === formData.email && u.password === formData.password)
+      const data = await response.json()
 
-    if (user) {
-      // Authentication successful
-      // Create auth token (in production, use JWT or similar)
-      const token = btoa(`${user.id}:${Date.now()}`)
-      localStorage.setItem("authToken", token)
-      localStorage.setItem("currentUser", JSON.stringify(user))
+      if (!response.ok) {
+        throw new Error(data.error || 'Login failed')
+      }
 
-      // Show success notification
+      // Login successful - store user data and token
+      localStorage.setItem("authToken", data.token)
+      localStorage.setItem("currentUser", JSON.stringify(data.user))
+
       toast({
         title: "Login successful!",
-        description: "You have successfully logged in.",
+        description: "Welcome back!",
       })
 
-      // Redirect to dashboard after short delay
+      // Redirect to dashboard
       setTimeout(() => {
         router.push("/dashboard")
-      }, 1000)
-    } else {
-      // Authentication failed
-      console.error("Login failed: Invalid credentials")
+      }, 500)
+
+    } catch (error: any) {
       toast({
         title: "Login failed",
-        description: "Invalid email or password. Please try again.",
+        description: error.message || "Invalid email or password.",
         variant: "destructive",
-        duration: 5000, // Show for 5 seconds
       })
+    } finally {
       setLoading(false)
     }
   }

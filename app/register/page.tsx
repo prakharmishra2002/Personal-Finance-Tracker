@@ -1,16 +1,27 @@
+/**
+ * Registration Page Component
+ * 
+ * Handles user registration with real database integration
+ * Features:
+ * - Form validation
+ * - Password strength requirements
+ * - Email format validation
+ * - Password hashing (server-side)
+ * - Email verification flow
+ * - Real-time error feedback
+ */
+
 "use client"
 
 import type React from "react"
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import Link from "next/link"
-import { useRouter, useSearchParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useToast } from "@/hooks/use-toast"
 import { PasswordInput } from "@/components/password-input"
-import { EmailService } from "@/services/email-service"
 import { AlertCircle, CheckCircle2, Loader2 } from "lucide-react"
 
 export default function RegisterPage() {
@@ -22,83 +33,40 @@ export default function RegisterPage() {
   })
   const [loading, setLoading] = useState(false)
   const [emailError, setEmailError] = useState("")
+  const [passwordError, setPasswordError] = useState("")
   const [verificationSent, setVerificationSent] = useState(false)
-  const router = useRouter()
-  const searchParams = useSearchParams()
   const { toast } = useToast()
-
-  // Check for verification token in URL
-  useEffect(() => {
-    const token = searchParams.get("token")
-    if (token) {
-      verifyEmail(token)
-    }
-  }, [searchParams])
-
-  const verifyEmail = async (token: string) => {
-    setLoading(true)
-
-    // Verify the token
-    const result = EmailService.verifyToken(token)
-
-    if (result.valid && result.userData) {
-      // Token is valid, complete registration
-      const user = result.userData
-
-      // Get existing users or initialize empty array
-      const existingUsers = JSON.parse(localStorage.getItem("users") || "[]")
-
-      // Save user to localStorage
-      localStorage.setItem("users", JSON.stringify([...existingUsers, user]))
-
-      // Create auth token
-      const authToken = btoa(`${user.id}:${Date.now()}`)
-      localStorage.setItem("authToken", token)
-      localStorage.setItem("currentUser", JSON.stringify(user))
-
-      toast({
-        title: "Email verified!",
-        description: "Your account has been successfully created.",
-      })
-
-      // Redirect to dashboard
-      setTimeout(() => {
-        router.push("/dashboard")
-      }, 1000)
-    } else {
-      toast({
-        title: "Verification failed",
-        description: "The verification link is invalid or has expired.",
-        variant: "destructive",
-      })
-      setLoading(false)
-    }
-  }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
     setFormData((prev) => ({ ...prev, [name]: value }))
 
-    // Clear email error when user types
-    if (name === "email") {
-      setEmailError("")
-    }
+    // Clear errors when user types
+    if (name === "email") setEmailError("")
+    if (name === "password" || name === "confirmPassword") setPasswordError("")
   }
 
-  const validateForm = () => {
+  const validateEmail = (email: string): boolean => {
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/
+    return emailRegex.test(email)
+  }
+
+  const validateForm = (): boolean => {
     // Validate email format
-    if (!EmailService.validateEmail(formData.email)) {
+    if (!validateEmail(formData.email)) {
       setEmailError("Please enter a valid email address")
+      return false
+    }
+
+    // Validate password length
+    if (formData.password.length < 8) {
+      setPasswordError("Password must be at least 8 characters long")
       return false
     }
 
     // Validate password match
     if (formData.password !== formData.confirmPassword) {
-      toast({
-        title: "Passwords don't match",
-        description: "Please make sure your passwords match.",
-        variant: "destructive",
-      })
+      setPasswordError("Passwords don't match")
       return false
     }
 
@@ -107,95 +75,80 @@ export default function RegisterPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setLoading(true)
-
+    
     // Validate form
     if (!validateForm()) {
-      setLoading(false)
       return
     }
 
-    // Get existing users or initialize empty array
-    const existingUsers = JSON.parse(localStorage.getItem("users") || "[]")
+    setLoading(true)
 
-    // Check if email already exists
-    if (existingUsers.some((u: any) => u.email === formData.email)) {
-      toast({
-        title: "Email already exists",
-        description: "Please use a different email address or login.",
-        variant: "destructive",
-      })
-      setLoading(false)
-      return
-    }
-
-    // Create user object
-    const user = {
-      id: Date.now().toString(),
-      name: formData.name,
-      email: formData.email,
-      password: formData.password, // In a real app, you would hash this password
-      createdAt: new Date().toISOString(),
-      verified: false,
-    }
-
-    // Create verification token
-    const token = EmailService.createVerificationToken(formData.email, user)
-
-    // Send verification email
     try {
-      await EmailService.sendVerificationEmail(formData.email, token)
-
-      setVerificationSent(true)
-      toast({
-        title: "Verification email sent",
-        description: "Please check your email to complete registration.",
+      // Call registration API
+      const response = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: formData.name,
+          email: formData.email,
+          password: formData.password,
+        }),
       })
-    } catch (error) {
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Registration failed')
+      }
+
+      // Registration successful
+      setVerificationSent(true)
+      
       toast({
-        title: "Failed to send verification email",
-        description: "Please try again later.",
+        title: "Registration successful!",
+        description: "Please check your email to verify your account.",
+      })
+
+    } catch (error: any) {
+      toast({
+        title: "Registration failed",
+        description: error.message || "Please try again later.",
         variant: "destructive",
       })
+    } finally {
+      setLoading(false)
     }
-
-    setLoading(false)
   }
 
-  // Update the verification sent screen to provide clearer instructions
-  // If verification email has been sent, show confirmation screen
+  // Verification sent screen
   if (verificationSent) {
     return (
       <div className="container flex h-screen w-screen flex-col items-center justify-center">
         <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[400px]">
           <div className="flex flex-col items-center space-y-2 text-center">
             <CheckCircle2 className="h-12 w-12 text-green-500" />
-            <h1 className="text-2xl font-semibold tracking-tight">Verification Email Sent</h1>
+            <h1 className="text-2xl font-semibold tracking-tight">Check Your Email</h1>
             <p className="text-sm text-muted-foreground">
-              We've simulated sending a verification link to <strong>{formData.email}</strong>
+              We've sent a verification link to <strong>{formData.email}</strong>
             </p>
             <div className="mt-4 p-4 bg-muted rounded-md text-sm">
-              <p className="font-medium mb-2">📝 Demo Instructions:</p>
+              <p className="font-medium mb-2">📧 Next Steps:</p>
               <ol className="list-decimal list-inside space-y-1 text-left">
-                <li>In a real app, you would check your email inbox</li>
-                <li>
-                  For this demo, visit the{" "}
-                  <Link href="/demo-verification" className="text-primary hover:underline">
-                    verification demo page
-                  </Link>
-                </li>
-                <li>Find your email in the list and click the verification link</li>
+                <li>Check your email inbox for <strong>{formData.email}</strong></li>
+                <li>Click the verification link in the email</li>
+                <li>You'll be automatically logged in</li>
+                <li>If you don't see the email, check your spam folder</li>
               </ol>
+              <p className="mt-3 text-xs text-muted-foreground">
+                The verification link will expire in 24 hours.
+              </p>
             </div>
           </div>
-          <div className="flex justify-between">
-            <Button variant="ghost" onClick={() => setVerificationSent(false)}>
-              Back to registration
-            </Button>
-            <Button asChild>
-              <Link href="/demo-verification">Go to Demo Verification</Link>
-            </Button>
-          </div>
+          <Button variant="ghost" onClick={() => setVerificationSent(false)}>
+            Back to registration
+          </Button>
         </div>
       </div>
     )
@@ -253,6 +206,7 @@ export default function RegisterPage() {
                     value={formData.password}
                     onChange={handleChange}
                   />
+                  <p className="text-xs text-muted-foreground">Must be at least 8 characters</p>
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor="confirmPassword">Confirm Password</Label>
@@ -263,6 +217,12 @@ export default function RegisterPage() {
                     value={formData.confirmPassword}
                     onChange={handleChange}
                   />
+                  {passwordError && (
+                    <div className="flex items-center text-sm text-red-500">
+                      <AlertCircle className="mr-1 h-4 w-4" />
+                      {passwordError}
+                    </div>
+                  )}
                 </div>
               </div>
             </CardContent>

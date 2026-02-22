@@ -34,86 +34,94 @@ export default function DashboardPage() {
       return
     }
 
-    setUser(JSON.parse(currentUser))
+    const userData = JSON.parse(currentUser)
+    setUser(userData)
 
-    // Load transactions from localStorage
-    const savedTransactions = localStorage.getItem(`transactions_${JSON.parse(currentUser).id}`)
-    if (savedTransactions) {
-      setTransactions(JSON.parse(savedTransactions))
-    } else {
-      // Set sample transactions for demo
-      const sampleTransactions = [
-        {
-          id: "1",
-          date: "2025-03-15",
-          description: "Grocery Shopping",
-          amount: -120.5,
-          category: "Food",
-          currency: "USD",
-        },
-        {
-          id: "2",
-          date: "2025-03-14",
-          description: "Salary",
-          amount: 3500.0,
-          category: "Income",
-          currency: "USD",
-        },
-        {
-          id: "3",
-          date: "2025-03-12",
-          description: "Electric Bill",
-          amount: -85.2,
-          category: "Utilities",
-          currency: "USD",
-        },
-        {
-          id: "4",
-          date: "2025-03-10",
-          description: "Restaurant",
-          amount: -65.3,
-          category: "Dining",
-          currency: "USD",
-        },
-        {
-          id: "5",
-          date: "2025-03-05",
-          description: "Freelance Work",
-          amount: 750.0,
-          category: "Income",
-          currency: "USD",
-        },
-      ]
-      setTransactions(sampleTransactions)
-      localStorage.setItem(`transactions_${JSON.parse(currentUser).id}`, JSON.stringify(sampleTransactions))
-    }
+    // Fetch transactions from database
+    fetchTransactions(userData.id)
   }, [router])
 
-  const addTransaction = (transaction: any) => {
-    const newTransaction = {
-      ...transaction,
-      id: Date.now().toString(),
+  const fetchTransactions = async (userId: string) => {
+    try {
+      const response = await fetch(`/api/transactions?userId=${userId}`)
+      const data = await response.json()
+
+      if (response.ok) {
+        setTransactions(data)
+      } else {
+        console.error('Failed to fetch transactions:', data.error)
+        // Start with empty array if fetch fails
+        setTransactions([])
+      }
+    } catch (error) {
+      console.error('Error fetching transactions:', error)
+      setTransactions([])
     }
-
-    const updatedTransactions = [newTransaction, ...transactions]
-    setTransactions(updatedTransactions)
-    localStorage.setItem(`transactions_${user.id}`, JSON.stringify(updatedTransactions))
-
-    toast({
-      title: "Transaction added",
-      description: "Your transaction has been successfully added.",
-    })
   }
 
-  const deleteTransaction = (id: string) => {
-    const updatedTransactions = transactions.filter((t) => t.id !== id)
-    setTransactions(updatedTransactions)
-    localStorage.setItem(`transactions_${user.id}`, JSON.stringify(updatedTransactions))
+  const addTransaction = async (transaction: any) => {
+    try {
+      const response = await fetch('/api/transactions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId: user.id,
+          date: transaction.date,
+          description: transaction.description,
+          amount: transaction.amount,
+          category: transaction.category,
+          currency: transaction.currency || 'USD',
+        }),
+      })
 
-    toast({
-      title: "Transaction deleted",
-      description: "Your transaction has been successfully deleted.",
-    })
+      const data = await response.json()
+
+      if (response.ok) {
+        // Add new transaction to the list
+        setTransactions([data, ...transactions])
+
+        toast({
+          title: "Transaction added",
+          description: "Your transaction has been successfully added.",
+        })
+      } else {
+        throw new Error(data.error || 'Failed to add transaction')
+      }
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to add transaction.",
+        variant: "destructive",
+      })
+    }
+  }
+
+  const deleteTransaction = async (id: string) => {
+    try {
+      const response = await fetch(`/api/transactions/${id}`, {
+        method: 'DELETE',
+      })
+
+      if (response.ok) {
+        // Remove transaction from the list
+        setTransactions(transactions.filter((t) => t.id !== id))
+
+        toast({
+          title: "Transaction deleted",
+          description: "Your transaction has been successfully deleted.",
+        })
+      } else {
+        throw new Error('Failed to delete transaction')
+      }
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to delete transaction.",
+        variant: "destructive",
+      })
+    }
   }
 
   // Calculate financial summary

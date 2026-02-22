@@ -1,0 +1,99 @@
+// Prisma Schema for Finance Tracker Application
+// This defines the database structure and relationships
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// User model - stores user account information
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String
+  password  String   // In production, this should be hashed with bcrypt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  verified  Boolean  @default(false)
+
+  // Relations
+  transactions Transaction[]
+  budgets      Budget[]
+  settings     UserSettings?
+
+  @@index([email])
+}
+
+// Transaction model - stores all financial transactions
+model Transaction {
+  id          String   @id @default(cuid())
+  userId      String
+  date        DateTime
+  description String
+  amount      Float    // Positive for income, negative for expenses
+  category    String
+  currency    String   @default("USD")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([date])
+  @@index([category])
+}
+
+// Budget model - stores budget limits for categories
+model Budget {
+  id        String   @id @default(cuid())
+  userId    String
+  category  String
+  amount    Float    // Budget limit
+  period    String   // weekly, monthly, quarterly, yearly
+  currency  String   @default("USD")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, category, period])
+  @@index([userId])
+}
+
+// UserSettings model - stores user preferences and settings
+model UserSettings {
+  id                   String   @id @default(cuid())
+  userId               String   @unique
+  defaultCurrency      String   @default("USD")
+  dateFormat           String   @default("MM/DD/YYYY")
+  theme                String   @default("system")
+  emailNotifications   Boolean  @default(true)
+  budgetAlerts         Boolean  @default(true)
+  weeklyReports        Boolean  @default(true)
+  newFeatures          Boolean  @default(false)
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+// VerificationToken model - for email verification
+model VerificationToken {
+  id        String   @id @default(cuid())
+  email     String
+  token     String   @unique
+  expires   DateTime
+  createdAt DateTime @default(now())
+
+  @@index([email])
+  @@index([token])
+}
