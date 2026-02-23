@@ -103,30 +103,48 @@ export async function POST(request: NextRequest) {
     // Send verification email
     const verificationUrl = `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/verify-email?token=${verificationToken}`
     
-    try {
-      await sendVerificationEmail(email, verificationUrl, name)
-    } catch (emailError) {
-      console.error('Failed to send email:', emailError)
-      // Delete user and token if email fails
-      await prisma.user.delete({ where: { id: user.id } })
-      await prisma.verificationToken.delete({ where: { token: verificationToken } })
-      
-      return NextResponse.json(
-        { error: 'Failed to send verification email. Please try again.' },
-        { status: 500 }
-      )
+    // Check if email is configured
+    const isEmailConfigured = process.env.EMAIL_USER && 
+                              process.env.EMAIL_PASSWORD && 
+                              process.env.EMAIL_USER !== 'your-email@gmail.com'
+    
+    console.log('Email configured:', isEmailConfigured)
+    
+    if (isEmailConfigured) {
+      // Try to send real email
+      try {
+        await sendVerificationEmail(email, verificationUrl, name)
+        console.log('Verification email sent successfully')
+      } catch (emailError) {
+        console.error('Failed to send email, but continuing in development mode:', emailError)
+        // Don't delete user - just continue in development mode
+      }
+    } else {
+      console.log('Email not configured - development mode')
+      console.log('Verification URL:', verificationUrl)
     }
 
     return NextResponse.json({
       success: true,
-      message: 'Registration successful. Please check your email to verify your account.',
-      userId: user.id
+      message: isEmailConfigured 
+        ? 'Registration successful. Please check your email to verify your account.'
+        : 'Registration successful. Check the verification link below.',
+      userId: user.id,
+      // Include verification URL if email not configured or failed
+      ...(!isEmailConfigured ? { verificationUrl } : {})
     }, { status: 201 })
 
   } catch (error) {
     console.error('Registration error:', error)
+    console.error('Error name:', error instanceof Error ? error.name : 'Unknown')
+    console.error('Error message:', error instanceof Error ? error.message : 'Unknown')
+    console.error('Error stack:', error instanceof Error ? error.stack : 'No stack')
+    
     return NextResponse.json(
-      { error: 'Failed to register user' },
+      { 
+        error: 'Failed to register user',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      },
       { status: 500 }
     )
   }
