@@ -18,11 +18,16 @@ declare global {
   var prisma: PrismaClient | undefined
 }
 
-// Create Prisma Client instance
+// Create Prisma Client instance with optimized settings for Vercel + Supabase
 // In production, create a new instance
 // In development, reuse the existing instance to prevent multiple connections
 export const prisma = global.prisma || new PrismaClient({
   log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
+  datasources: {
+    db: {
+      url: process.env.DATABASE_URL
+    }
+  }
 })
 
 // In development, store the instance globally to prevent multiple instances
