@@ -4,9 +4,10 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "prisma generate && next build",
     "start": "next start",
     "lint": "next lint",
+    "postinstall": "prisma generate",
     "db:setup": "node scripts/setup-database.js",
     "db:studio": "npx prisma studio",
     "db:migrate": "npx prisma migrate dev",
