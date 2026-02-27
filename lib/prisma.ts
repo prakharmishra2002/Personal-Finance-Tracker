@@ -2,12 +2,7 @@
  * Prisma Client Instance
  * 
  * This file creates and exports a singleton instance of Prisma Client.
- * In development, it prevents multiple instances from being created
- * due to hot reloading.
- * 
- * Usage:
- * import { prisma } from '@/lib/prisma'
- * const users = await prisma.user.findMany()
+ * Configured for Vercel serverless environment with connection pooling.
  */
 
 import { PrismaClient } from '@prisma/client'
@@ -18,16 +13,22 @@ declare global {
   var prisma: PrismaClient | undefined
 }
 
-// Create Prisma Client instance with optimized settings for Vercel + Supabase
-// In production, create a new instance
-// In development, reuse the existing instance to prevent multiple connections
+// Create Prisma Client instance with optimized settings for Vercel
 export const prisma = global.prisma || new PrismaClient({
   log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
   datasources: {
     db: {
       url: process.env.DATABASE_URL
     }
-  }
+  },
+  // Add connection pool settings for serverless
+  ...(process.env.NODE_ENV === 'production' && {
+    datasources: {
+      db: {
+        url: process.env.DATABASE_URL + '?connection_limit=1&pool_timeout=0'
+      }
+    }
+  })
 })
 
 // In development, store the instance globally to prevent multiple instances
