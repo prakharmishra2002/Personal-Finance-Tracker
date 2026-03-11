@@ -16,19 +16,6 @@ declare global {
 // Create Prisma Client instance with optimized settings for Vercel
 export const prisma = global.prisma || new PrismaClient({
   log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
-  datasources: {
-    db: {
-      url: process.env.DATABASE_URL
-    }
-  },
-  // Add connection pool settings for serverless
-  ...(process.env.NODE_ENV === 'production' && {
-    datasources: {
-      db: {
-        url: process.env.DATABASE_URL + '?connection_limit=1&pool_timeout=0'
-      }
-    }
-  })
 })
 
 // In development, store the instance globally to prevent multiple instances

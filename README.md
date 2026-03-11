@@ -20,7 +20,7 @@ A modern, full-stack personal finance management application built with Next.js,
 ### Prerequisites
 
 - Node.js 18+ installed
-- PostgreSQL database (we recommend [Supabase](https://supabase.com) - free tier)
+- PostgreSQL database (we recommend [Neon](https://neon.tech) - free tier, optimized for Vercel)
 - Gmail account (for email verification)
 
 ### 1. Clone the Repository
@@ -38,29 +38,29 @@ npm install
 
 ### 3. Setup Database
 
-**Option A: Supabase (Recommended - Free)**
+**Option A: Neon (Recommended for Vercel/Production)**
 
-1. Go to [supabase.com](https://supabase.com) and create account
-2. Create new project
-3. Get connection string from Settings → Database → Connection string (URI)
-4. Copy `.env.example` to `.env`
-5. Update `DATABASE_URL` in `.env` with your Supabase connection string
+1. Go to [neon.tech](https://neon.tech) and create an account.
+2. Create a new project.
+3. In the Dashboard, select **Prisma** from the connection string dropdown.
+4. Copy the URL and update `DATABASE_URL` and `DIRECT_URL` in your `.env` file.
 
-**Option B: Local PostgreSQL**
+**Option B: Supabase**
 
-1. Install PostgreSQL locally
-2. Create database: `createdb finance_tracker`
-3. Update `DATABASE_URL` in `.env`
+1. Go to [supabase.com](https://supabase.com) and create project.
+2. Get the connection string.
+3. Update `.env` with your Supabase credentials.
 
 ### 4. Setup Database Tables
 
 ```bash
-npm run db:setup
+npx prisma generate
+npx prisma db push
 ```
 
 This will:
 - Generate Prisma Client
-- Create all database tables
+- Create/Sync all database tables
 - Set up relationships
 
 ### 5. Configure Email (Optional for Development)
@@ -102,7 +102,7 @@ Visit: http://localhost:3000
 │   ├── transaction-list.tsx
 │   └── ...
 ├── lib/
-│   ├── prisma.ts         # Prisma client
+│   ├── prisma.ts         # Prisma client (Optimized for Serverless)
 │   ├── email.ts          # Email service
 │   └── utils.ts          # Utility functions
 ├── prisma/
@@ -110,30 +110,6 @@ Visit: http://localhost:3000
 └── services/
     └── email-service.ts  # Email verification service
 ```
-
-## 🗄️ Database Schema
-
-### User
-- id, email, name, password (hashed)
-- verified status
-- Relations: transactions, budgets, settings
-
-### Transaction
-- id, userId, date, description
-- amount, category, currency
-- Indexed by userId, date, category
-
-### Budget
-- id, userId, category, amount
-- period (weekly/monthly/yearly)
-- Unique constraint on userId + category + period
-
-### UserSettings
-- User preferences and notification settings
-
-### VerificationToken
-- Email verification tokens
-- 24-hour expiry
 
 ## 🔐 Security Features
 
@@ -144,21 +120,6 @@ Visit: http://localhost:3000
 - ✅ **Secure Tokens** - Cryptographically random
 - ✅ **Session Management** - Secure token storage
 
-## 📧 Email Configuration
-
-### Development Mode (Default)
-- No email setup required
-- Verification links shown on screen
-- Perfect for testing
-
-### Production Mode
-1. Enable Gmail 2-Step Verification
-2. Create App Password
-3. Update `.env` with credentials
-4. Restart server
-
-**Detailed Guide:** See "Email Setup" section below
-
 ## 🛠️ Available Scripts
 
 ```bash
@@ -168,109 +129,24 @@ npm run build            # Build for production
 npm run start            # Start production server
 
 # Database
-npm run db:setup         # Initial database setup
-npm run db:studio        # Open Prisma Studio (database viewer)
-npm run db:migrate       # Create new migration
-npm run db:generate      # Generate Prisma Client
-npm run db:reset         # Reset database (deletes all data!)
-
-# Utilities
-npm run db:check         # Check database connection
+npx prisma generate      # Generate Prisma Client
+npx prisma db push       # Push schema to database
+npx prisma studio        # Open Prisma Studio (database viewer)
 ```
-
-## 🎨 Tech Stack
-
-- **Framework:** Next.js 15
-- **Language:** TypeScript
-- **Database:** PostgreSQL
-- **ORM:** Prisma
-- **Authentication:** Custom with bcrypt
-- **Email:** Nodemailer (Gmail SMTP)
-- **Styling:** Tailwind CSS
-- **UI Components:** shadcn/ui
-- **Charts:** Recharts
-- **Icons:** Lucide React
-
-## 📊 Features in Detail
-
-### Authentication
-- Email/password registration
-- Email verification required
-- Secure password hashing
-- Session management
-- Auto-login after verification
-
-### Transaction Management
-- Add income/expenses
-- Categorize transactions
-- Filter by category and date
-- Delete transactions
-- Real-time updates
-
-### Dashboard
-- Financial overview (balance, income, expenses)
-- Recent transactions
-- Spending by category (pie chart)
-- Monthly trends
-- Budget progress
-
-### Currency Converter
-- Real-time exchange rates
-- Multiple currencies supported
-- Easy conversion interface
 
 ## 🚀 Deployment
 
 ### Deploy to Vercel
 
-1. Push code to GitHub
-2. Go to [vercel.com](https://vercel.com)
-3. Import your repository
-4. Add environment variables:
-   - `DATABASE_URL`
-   - `EMAIL_USER` (optional)
-   - `EMAIL_PASSWORD` (optional)
+1. Push code to GitHub.
+2. Import repository to Vercel.
+3. Add Environment Variables:
+   - `DATABASE_URL` (Use Neon connection string)
+   - `DIRECT_URL` (Use Neon connection string)
    - `NEXTAUTH_SECRET`
-   - `NEXTAUTH_URL`
-5. Deploy!
-
-### Environment Variables
-
-```env
-# Required
-DATABASE_URL="postgresql://..."
-NEXTAUTH_SECRET="your-secret-key"
-NEXTAUTH_URL="https://your-domain.com"
-
-# Optional (for email)
-EMAIL_USER="your-email@gmail.com"
-EMAIL_PASSWORD="your-app-password"
-```
-
-## 📖 Email Setup Guide
-
-### Step 1: Enable 2-Step Verification
-1. Go to: https://myaccount.google.com/security
-2. Click "2-Step Verification"
-3. Follow setup process
-
-### Step 2: Create App Password
-1. Go to: https://myaccount.google.com/apppasswords
-2. Select "Mail" → "Other (Custom name)"
-3. Type: `Finance Tracker`
-4. Click "Generate"
-5. Copy 16-character password (remove spaces)
-
-### Step 3: Update .env
-```env
-EMAIL_USER="youremail@gmail.com"
-EMAIL_PASSWORD="abcdefghijklmnop"
-```
-
-### Step 4: Restart Server
-```bash
-npm run dev
-```
+   - `NEXTAUTH_URL` (Your production URL)
+   - `EMAIL_USER` & `EMAIL_PASSWORD` (Optional)
+4. Deploy!
 
 ## 🧪 Testing
 
@@ -279,23 +155,11 @@ npm run dev
 2. Fill in form with real email
 3. Click "Create account"
 4. Check email or screen for verification link
-5. Click verification link
-6. Auto-login to dashboard
-
-### Test Transactions
-1. Click "Add Transaction"
-2. Fill in details
-3. Click "Add"
-4. Transaction appears immediately
-5. Refresh page - data persists
 
 ### Verify Database
 ```bash
-npm run db:studio
+npx prisma studio
 ```
-- View all tables
-- Check user verification status
-- See transactions in real-time
 
 ## 🤝 Contributing
 
@@ -304,44 +168,6 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 ## 📝 License
 
 This project is open source and available under the [MIT License](LICENSE).
-
-## 🆘 Troubleshooting
-
-### "Can't reach database server"
-- Check `DATABASE_URL` in `.env`
-- Verify database is running
-- Test connection: `npm run db:check`
-
-### "Failed to send verification email"
-- App works in development mode without email
-- For production, configure Gmail (see Email Setup)
-- Check console for verification link
-
-### "Invalid email or password"
-- Email is case-sensitive
-- Make sure account is verified
-- Check password carefully
-
-### Port already in use
-```bash
-npx kill-port 3000
-npm run dev
-```
-
-## 📞 Support
-
-For issues and questions:
-- Check existing documentation
-- Review error messages in console
-- Verify `.env` configuration
-- Check database connection
-
-## 🎉 Acknowledgments
-
-- Built with [Next.js](https://nextjs.org/)
-- UI components from [shadcn/ui](https://ui.shadcn.com/)
-- Database hosted on [Supabase](https://supabase.com)
-- Icons from [Lucide](https://lucide.dev/)
 
 ---
 
